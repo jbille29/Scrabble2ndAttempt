@@ -1,10 +1,11 @@
 import React from 'react';
 
-function DraggableSquare({ onDragStart }) {
+function DraggableSquare({ onDragStart, onTouchStart }) {
   return (
     <div
       draggable
       onDragStart={onDragStart}
+      onTouchStart={onTouchStart}
       style={{
         width: '50px',
         height: '50px',
@@ -12,6 +13,7 @@ function DraggableSquare({ onDragStart }) {
         cursor: 'grab'
       }}
     >
+      {/* Draggable square that can be moved */}
     </div>
   );
 }

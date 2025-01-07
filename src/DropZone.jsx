@@ -14,6 +14,7 @@ function DropZone({ onDrop, onDragOver }) {
         justifyContent: 'center'
       }}
     >
+      {/* Area where items can be dropped */}
       Drop here
     </div>
   );
