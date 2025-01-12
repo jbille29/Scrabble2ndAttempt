@@ -4,41 +4,51 @@ import Square from './Square';
 import Tile from './Tile';
 
 const Board = () => {
-  // Tiles initially not on the board
-  const initialTiles = [
-    { id: 1, letter: 'R' },
-    { id: 2, letter: 'B' },
-    { id: 3, letter: 'C' },
-    { id: 4, letter: 'D' },
-    { id: 5, letter: 'E' },
+  // Define pre-placed tiles and their positions on a 5x5 board
+  const prePlacedTiles = [
+    { id: 1, letter: 'R', position: 12, isPrePlaced: true },
+    { id: 2, letter: 'B', position: 13, isPrePlaced: true },
+    { id: 3, letter: 'C', position: 14, isPrePlaced: true },
   ];
 
-  const [tiles, setTiles] = useState(initialTiles);
-  const [board, setBoard] = useState(Array(25).fill(null)); // Board squares are initially empty
+  // Define tiles in the letter pool
+  const letterPool = [
+    { id: 4, letter: 'D', isPrePlaced: false },
+    { id: 5, letter: 'E', isPrePlaced: false },
+  ];
+
+  // Initialize the board with nulls and place pre-placed tiles
+  const initialBoardState = Array(25).fill(null);
+  prePlacedTiles.forEach(tile => {
+    initialBoardState[tile.position] = tile;
+  });
+
+  const [tilesInPool, setTilesInPool] = useState(letterPool);
+  const [board, setBoard] = useState(initialBoardState); // Board now starts with pre-placed tiles
 
   const moveTileToBoard = (tile, toIndex) => {
     const newBoard = [...board];
 
-    // Find and remove the tile from its current position if it's already on the board
+    // Check if moving within the board or from pool
     const currentIndex = newBoard.findIndex(t => t?.id === tile.id);
     if (currentIndex !== -1) {
-      newBoard[currentIndex] = null;
+      newBoard[currentIndex] = null; // Remove from current position
     }
-    
-    // Place the tile on the new position on the board
-    newBoard[toIndex] = tile;
+
+    // Place the tile in the new position
+    newBoard[toIndex] = {...tile, isPrePlaced: false}; // Mark it as not pre-placed when moved
     setBoard(newBoard);
 
-    // If the tile was not on the board already, remove it from the tile area
-    if (!board.includes(tile)) {
-      setTiles(tiles.filter(t => t.id !== tile.id));
+    // If the tile was from the pool, remove it from the pool
+    if (currentIndex === -1) {
+      setTilesInPool(tilesInPool.filter(t => t.id !== tile.id));
     }
   };
 
   const returnTileToArea = (index) => {
     const tile = board[index];
-    if (tile) {
-      setTiles([...tiles, tile]); // Add the tile back to the tile area
+    if (tile && !tile.isPrePlaced) { // Only allow returning non pre-placed tiles to the pool
+      setTilesInPool([...tilesInPool, tile]); // Add the tile back to the tile area
       const newBoard = [...board];
       newBoard[index] = null; // Remove the tile from the board
       setBoard(newBoard);
@@ -48,8 +58,9 @@ const Board = () => {
   return (
     <div>
       <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '20px' }}>
-        {tiles.map(tile => (
-          <Tile key={tile.id} letter={tile.letter} id={tile.id} />
+        {tilesInPool.map(tile => (
+          // Adjust the rendering logic in Board.jsx
+          <Tile key={tile.id} letter={tile.letter} id={tile.id} isDraggable={!tile.isPrePlaced} />
         ))}
       </div>
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 50px)', gap: '5px' }}>

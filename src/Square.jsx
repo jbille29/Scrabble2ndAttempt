@@ -7,7 +7,7 @@ const Square = ({ onDrop, returnTile, tile, id }) => {
   const [{ isOver, canDrop }, drop] = useDrop({
     accept: 'tile',
     drop: (item) => onDrop(item, id),
-    canDrop: () => !tile, // Only allow dropping if there's no tile currently in the square
+    canDrop: () => !tile || !tile.isPrePlaced, // Only allow dropping if there's no tile or the tile is not pre-placed
     collect: monitor => ({
       isOver: !!monitor.isOver(),
       canDrop: !!monitor.canDrop(),
@@ -30,7 +30,7 @@ const Square = ({ onDrop, returnTile, tile, id }) => {
   return (
     <div ref={drop} style={{ width: '50px', height: '50px', backgroundColor, border: '1px solid black', display: 'flex', justifyContent: 'center', alignItems: 'center' }}
          onDoubleClick={handleDoubleClick}>
-      {tile && <Tile letter={tile.letter} id={tile.id} />}
+          {tile && <Tile key={tile.id} letter={tile.letter} id={tile.id} isDraggable={!tile.isPrePlaced} />}
     </div>
   );
 };
