@@ -6,7 +6,7 @@ import Tile from './Tile';
 const Board = () => {
   // Tiles initially not on the board
   const initialTiles = [
-    { id: 1, letter: 'A' },
+    { id: 1, letter: 'R' },
     { id: 2, letter: 'B' },
     { id: 3, letter: 'C' },
     { id: 4, letter: 'D' },
