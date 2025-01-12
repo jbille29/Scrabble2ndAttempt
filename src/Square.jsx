@@ -3,7 +3,7 @@ import React from 'react';
 import { useDrop } from 'react-dnd';
 import Tile from './Tile';
 
-const Square = ({ onDrop, returnTile, tile, id }) => {
+const Square = ({ onDrop, returnTile, tile, id, feature }) => {
   const [{ isOver, canDrop }, drop] = useDrop({
     accept: 'tile',
     drop: (item) => onDrop(item, id),
@@ -13,6 +13,8 @@ const Square = ({ onDrop, returnTile, tile, id }) => {
       canDrop: !!monitor.canDrop(),
     }),
   });
+
+  const featureStyle = feature ? { border: '2px dashed red' } : {}; // Example style change for feature squares
 
   const handleDoubleClick = () => {
     returnTile(id);
@@ -28,7 +30,7 @@ const Square = ({ onDrop, returnTile, tile, id }) => {
   }
 
   return (
-    <div ref={drop} style={{ width: '50px', height: '50px', backgroundColor, border: '1px solid black', display: 'flex', justifyContent: 'center', alignItems: 'center' }}
+    <div ref={drop} style={{ width: '50px', height: '50px', backgroundColor, border: '1px solid black', display: 'flex', justifyContent: 'center', alignItems: 'center', ...featureStyle }}
          onDoubleClick={handleDoubleClick}>
           {tile && <Tile key={tile.id} letter={tile.letter} id={tile.id} isDraggable={!tile.isPrePlaced} />}
     </div>
