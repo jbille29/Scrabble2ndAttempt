@@ -2,13 +2,12 @@
 import React, { useState } from 'react';
 import Square from './Square';
 import Tile from './Tile';
+import { extractWords, calculateScore, isConnected } from './utils/gameUtils';
 
 const Board = () => {
   const gridWidth = 8; // Set grid width for 8x8 grid
   const gridCellSize = '50px'; // Size for each cell in the grid
   const totalTiles = gridWidth * gridWidth; // Total number of tiles for an 8x8 grid
-
-  const validWords = ['APPLE', 'ORANGE', 'GRAPE', 'BANANA', 'CHERRY'];
 
   const letterScores = {
     A: 1, B: 3, C: 3, D: 2, E: 1,
@@ -82,62 +81,14 @@ const Board = () => {
     }
   };
 
-  const extractWords = (board) => {
-    let words = [];
-    let word = '';
-
-    // Horizontal words
-    for (let i = 0; i < gridWidth; i++) {
-      word = '';
-      for (let j = 0; j < gridWidth; j++) {
-        const tile = board[i * gridWidth + j].tile;
-        if (tile) {
-          word += tile.letter;
-        } else if (word.length > 1) {
-          words.push(word);
-          word = '';
-        } else {
-          word = '';
-        }
-      }
-      if (word.length > 1) words.push(word); // Check last word in the row
-    }
-
-    // Vertical words
-    for (let j = 0; j < gridWidth; j++) {
-      word = '';
-      for (let i = 0; i < gridWidth; i++) {
-        const tile = board[i * gridWidth + j].tile;
-        if (tile) {
-          word += tile.letter;
-        } else if (word.length > 1) {
-          words.push(word);
-          word = '';
-        } else {
-          word = '';
-        }
-      }
-      if (word.length > 1) words.push(word); // Check last word in the column
-    }
-
-    return words;
-  };
-
-  const calculateScore = () => {
-    let score = 0;
-    const words = extractWords(board);
-    const valid = words.every(word => validWords.includes(word.toUpperCase()));
-    let isConnected = true; // Implement your connectivity validation here
-
-    if (valid && isConnected) {
-      words.forEach(word => {
-        score += word.split('').reduce((acc, letter) => acc + letterScores[letter.toUpperCase()], 0);
-      });
-      setModalContent(`Your score is: ${score}`);
+  const handleCalculateScore = () => {
+    const words = extractWords(board, gridWidth);
+    if (isConnected(board, gridWidth)) {
+      calculateScore(words, letterScores, setModalContent, setShowModal);
     } else {
-      setModalContent("Invalid words or tile placement.");
+      setModalContent("Tiles are not properly connected.");
+      setShowModal(true);
     }
-    setShowModal(true);
   };
 
   const handleCloseModal = () => {
@@ -165,7 +116,7 @@ const Board = () => {
         ))}
       </div>
       <button 
-        onClick={calculateScore} 
+        onClick={handleCalculateScore} 
         style={{ 
           marginTop: '20px',
           backgroundColor: '#4CAF50', // Vibrant green color
