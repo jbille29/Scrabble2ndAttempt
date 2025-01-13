@@ -3,11 +3,11 @@ import React from 'react';
 import { useDrop } from 'react-dnd';
 import Tile from './Tile';
 
-const Square = ({ onDrop, returnTile, tile, id, feature }) => {
+const Square = ({ onDrop, returnTile, tile, id, feature, letterScores }) => {
   const [{ isOver, canDrop }, drop] = useDrop({
     accept: 'tile',
     drop: (item) => onDrop(item, id),
-    canDrop: () => !tile || !tile.isPrePlaced, // Only allow dropping if there's no tile or the tile is not pre-placed
+    canDrop: () => !tile, // Only allow dropping if there's no tile or the tile is not pre-placed
     collect: monitor => ({
       isOver: !!monitor.isOver(),
       canDrop: !!monitor.canDrop(),
@@ -30,9 +30,9 @@ const Square = ({ onDrop, returnTile, tile, id, feature }) => {
   }
 
   return (
-    <div ref={drop} style={{ width: '50px', height: '50px', backgroundColor, border: '1px solid black', display: 'flex', justifyContent: 'center', alignItems: 'center', ...featureStyle }}
+    <div ref={drop} style={{ width: '50px', height: '50px', backgroundColor, border: '1px solid #b0bec5', display: 'flex', justifyContent: 'center', alignItems: 'center' }}
          onDoubleClick={handleDoubleClick}>
-          {tile && <Tile key={tile.id} letter={tile.letter} id={tile.id} isDraggable={!tile.isPrePlaced} />}
+          {tile && <Tile key={tile.id} letter={tile.letter} id={tile.id} isDraggable={!tile.isPrePlaced} letterScores={letterScores}/>}
     </div>
   );
 };

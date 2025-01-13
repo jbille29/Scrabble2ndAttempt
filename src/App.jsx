@@ -14,7 +14,14 @@ function App() {
 
   return (
     <DndProvider backend={backend} options={backendOptions}>
-      <div style={{ display: 'flex', justifyContent: 'center', padding: 40 }}>
+      <div style={{
+        display: 'flex',
+        justifyContent: 'center',
+        padding: 40,
+        backgroundColor: '#f7f7f7', // Soft grey background
+        minHeight: '100vh', // Full view height
+        fontFamily: 'Arial, sans-serif' // Simple sans-serif font
+      }}>
         <Board />
       </div>
     </DndProvider>
