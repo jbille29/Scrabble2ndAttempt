@@ -69,6 +69,7 @@ const Square = ({ onDrop, returnTile, tile, id, feature, letterScores, tileSize 
       padding: '0',
        position: 'relative',
       borderRadius: '5px',
+      userSelect: 'none',  // Prevent text selection
     }}
          onDoubleClick={handleDoubleClick}>
           {tile && <Tile key={tile.id} letter={tile.letter} id={tile.id} isDraggable={!tile.isPrePlaced} letterScores={letterScores} tileSize={tileSize} featureBackground={feature ? featureStyles[feature.type].backgroundColor : null} />}

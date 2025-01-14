@@ -36,6 +36,7 @@ const Tile = ({ letter, id, isDraggable, letterScores, tileSize, featureBackgrou
       alignItems: 'center',
       borderRadius: '5px', // Rounded corners for aesthetics
       boxSizing: 'border-box', // Include padding and border in the size
+      userSelect: 'none',  // Prevent text selection
     }}>
       {letter}
       <span style={{

@@ -1,8 +1,9 @@
-// components/Board.jsx
 import React, { useState, useEffect } from 'react';
 import Square from './Square';
 import Tile from './Tile';
 import { extractWords, calculateScore, isConnected } from './utils/gameUtils';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faRedo } from '@fortawesome/free-solid-svg-icons';
 
 const Board = () => {
   const gridWidth = 8; // Set grid width for 8x8 grid
@@ -90,6 +91,13 @@ const Board = () => {
     }
   };
 
+  const resetBoard = () => {
+    setBoard(Array(gridWidth * gridWidth).fill(null).map((_, index) => ({
+      tile: prePlacedTiles.find(t => t.position === index) || null,
+    })));
+    setTilesInPool([...letterPool]); // Reset tiles in pool to initial state
+  };
+
   const handleCalculateScore = () => {
     const words = extractWords(board, gridWidth);
     if (isConnected(board, gridWidth)) {
@@ -106,13 +114,6 @@ const Board = () => {
 
   return (
     <div>
-      <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '20px' }}>
-        {tilesInPool.map(tile => (
-          <div style={{marginRight:'5px' }}>
-            <Tile key={tile.id} letter={tile.letter} id={tile.id} isDraggable={!tile.isPrePlaced} letterScores={letterScores} tileSize={tileSize} featureBackground={null}/>
-          </div>
-        ))}
-      </div>
       <div style={{ 
           display: 'grid',
           gridTemplateColumns: `repeat(${gridWidth}, ${tileSize})`,
@@ -120,9 +121,16 @@ const Board = () => {
           backgroundColor: '#ffffff', // Bright, clean background for the grid
           padding: '10px',
           boxShadow: '0 4px 8px rgba(0,0,0,0.1)' // Subtle shadow for depth
-      }}>
+        }}>
         {board.map((square, index) => (
           <Square key={index} id={index} onDrop={moveTileToBoard} returnTile={returnTileToArea} tile={square.tile} feature={square.feature} letterScores={letterScores} tileSize={tileSize}/>
+        ))}
+      </div>
+      <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '20px' }}>
+        {tilesInPool.map(tile => (
+          <div style={{marginRight:'5px', marginTop:'25px'}} key={tile.id}>
+            <Tile key={tile.id} letter={tile.letter} id={tile.id} isDraggable={!tile.isPrePlaced} letterScores={letterScores} tileSize={tileSize} featureBackground={null}/>
+          </div>
         ))}
       </div>
       <button 
@@ -137,6 +145,9 @@ const Board = () => {
           fontSize: '16px',
           borderRadius: '5px'
         }}>Submit</button>
+        <div style={{ marginBottom: '20px' }}>
+        <FontAwesomeIcon icon={faRedo} onClick={resetBoard} style={{ cursor: 'pointer', color: '#333', fontSize: '24px' }} />
+      </div>
       {showModal && (
         <div 
           style={{ 
