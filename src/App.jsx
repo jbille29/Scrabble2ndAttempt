@@ -4,6 +4,7 @@ import { HTML5Backend } from 'react-dnd-html5-backend';
 import { TouchBackend } from 'react-dnd-touch-backend';
 import { isTouchDevice } from './utils/utils';
 import Board from './Board';
+import Navbar from './components/Navbar';
 
 function App() {
   const backend = isTouchDevice() ? TouchBackend : HTML5Backend;
@@ -14,13 +15,16 @@ function App() {
 
   return (
     <DndProvider backend={backend} options={backendOptions}>
+      <Navbar />
       <div style={{
-        display: 'flex',
-        justifyContent: 'center',
-        padding: 40,
-        backgroundColor: '#f7f7f7', // Soft grey background
-        minHeight: '100vh', // Full view height
-        fontFamily: 'Arial, sans-serif' // Simple sans-serif font
+       display: 'flex',
+       flexDirection: 'column',
+       alignItems: 'center', // Centered horizontally
+       justifyContent: 'center', // Centered vertically
+       padding: '40px 0', // Top and bottom padding only
+       backgroundColor: '#f7f7f7', // Soft grey background
+       minHeight: 'calc(100vh - 60px)', // Adjust for navbar height
+       fontFamily: 'Arial, sans-serif' // Simple sans-serif font
       }}>
         <Board />
       </div>

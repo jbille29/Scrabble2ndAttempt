@@ -38,9 +38,9 @@ const Board = () => {
   ];
 
   const featureSquares = {
-    3: { multiplier: 2 },   // Double the score of the tile placed here
-    7: { multiplier: -1 },  // Subtract points for the tile placed here
-    20: { multiplier: 3 },  // Triple the score of the tile placed here
+    3: { type: 'doubleScore', multiplier: 2 },
+    7: { type: 'subtractPoints', multiplier: -1 },
+    20: { type: 'tripleScore', multiplier: 3 }
   };
 
   // Initialize the board with nulls and include features and pre-placed tiles
@@ -108,14 +108,15 @@ const Board = () => {
     <div>
       <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '20px' }}>
         {tilesInPool.map(tile => (
-          <Tile key={tile.id} letter={tile.letter} id={tile.id} isDraggable={!tile.isPrePlaced} letterScores={letterScores} tileSize={tileSize}/>
+          <div style={{marginRight:'5px' }}>
+            <Tile key={tile.id} letter={tile.letter} id={tile.id} isDraggable={!tile.isPrePlaced} letterScores={letterScores} tileSize={tileSize} featureBackground={null}/>
+          </div>
         ))}
       </div>
       <div style={{ 
           display: 'grid',
           gridTemplateColumns: `repeat(${gridWidth}, ${tileSize})`,
           gap: '5px',
-          maxWidth: `${gridWidth * parseInt(tileSize, 10)}px`,
           backgroundColor: '#ffffff', // Bright, clean background for the grid
           padding: '10px',
           boxShadow: '0 4px 8px rgba(0,0,0,0.1)' // Subtle shadow for depth

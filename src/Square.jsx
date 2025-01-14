@@ -2,6 +2,26 @@
 import React from 'react';
 import { useDrop } from 'react-dnd';
 import Tile from './Tile';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faTimes, faMinus, faArrowUp } from '@fortawesome/free-solid-svg-icons';
+
+const featureStyles = {
+  doubleScore: {
+    backgroundColor: '#b6e6bd',
+    icon: <FontAwesomeIcon icon={faTimes} />, // Example icon for double score
+    iconText: 'x2'
+  },
+  subtractPoints: {
+    backgroundColor: '#f7c6c7',
+    icon: <FontAwesomeIcon icon={faMinus} />, // Example icon for subtract points
+    iconText: ''
+  },
+  tripleScore: {
+    backgroundColor: '#f9d67a',
+    icon: <FontAwesomeIcon icon={faArrowUp} />, // Example icon for triple score
+    iconText: 'x3'
+  }
+};
 
 const Square = ({ onDrop, returnTile, tile, id, feature, letterScores, tileSize }) => {
   const [{ isOver, canDrop }, drop] = useDrop({
@@ -14,19 +34,26 @@ const Square = ({ onDrop, returnTile, tile, id, feature, letterScores, tileSize 
     }),
   });
 
-  const featureStyle = feature ? { border: '2px dashed red' } : {}; // Example style change for feature squares
-
   const handleDoubleClick = () => {
     returnTile(id);
   };
 
-  let backgroundColor = '#f0f0f0'; // Default background
+  let backgroundColor = tile ? 'transparent' : (feature && featureStyles[feature.type] ? featureStyles[feature.type].backgroundColor : '#e3e8f8');
+  let icon = null; // No icon by default
+  let iconText = '';
+  
+  // Apply feature styles if the feature exists
+  if (feature && featureStyles[feature.type]) {
+    backgroundColor = featureStyles[feature.type].backgroundColor;
+    console.log(feature)
+    icon = featureStyles[feature.type].icon;
+    iconText = featureStyles[feature.type].iconText;
+  }
+
   if (isOver && canDrop) {
     backgroundColor = '#aaf'; // Active drag over and can drop
   } else if (isOver && !canDrop) {
     backgroundColor = '#f88'; // Active drag over and cannot drop
-  } else if (canDrop) {
-    backgroundColor = '#faa'; // Potential drop zone (only theoretical since it won't happen without isOver)
   }
 
   return (
@@ -35,15 +62,27 @@ const Square = ({ onDrop, returnTile, tile, id, feature, letterScores, tileSize 
       width: tileSize,
       height: tileSize,
       backgroundColor, 
-      border: '0 solid #b0bec5', 
       display: 'flex', 
       justifyContent: 'center', 
       alignItems: 'center',
       boxSizing: 'border-box',
-      padding: '0'
+      padding: '0',
+       position: 'relative',
+      borderRadius: '5px',
     }}
          onDoubleClick={handleDoubleClick}>
-          {tile && <Tile key={tile.id} letter={tile.letter} id={tile.id} isDraggable={!tile.isPrePlaced} letterScores={letterScores} tileSize={tileSize} />}
+          {tile && <Tile key={tile.id} letter={tile.letter} id={tile.id} isDraggable={!tile.isPrePlaced} letterScores={letterScores} tileSize={tileSize} featureBackground={feature ? featureStyles[feature.type].backgroundColor : null} />}
+          {feature && feature.icon && (
+            <div style={{
+              position: 'absolute',
+              fontSize: '12px',
+              color: '#333',
+              bottom: '5px',
+              right: '5px'
+            }}>
+          {feature.icon}{feature.iconText}
+        </div>
+      )}
     </div>
   );
 };
