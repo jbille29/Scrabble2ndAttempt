@@ -3,7 +3,7 @@ import React from 'react';
 import { useDrop } from 'react-dnd';
 import Tile from './Tile';
 
-const Square = ({ onDrop, returnTile, tile, id, feature, letterScores }) => {
+const Square = ({ onDrop, returnTile, tile, id, feature, letterScores, tileSize }) => {
   const [{ isOver, canDrop }, drop] = useDrop({
     accept: 'tile',
     drop: (item) => onDrop(item, id),
@@ -32,16 +32,18 @@ const Square = ({ onDrop, returnTile, tile, id, feature, letterScores }) => {
   return (
     <div ref={drop} 
     style={{ 
-      width: '60px', 
-      height: '60px', 
+      width: tileSize,
+      height: tileSize,
       backgroundColor, 
-      border: '1px solid #b0bec5', 
+      border: '0 solid #b0bec5', 
       display: 'flex', 
       justifyContent: 'center', 
-      alignItems: 'center' 
+      alignItems: 'center',
+      boxSizing: 'border-box',
+      padding: '0'
     }}
          onDoubleClick={handleDoubleClick}>
-          {tile && <Tile key={tile.id} letter={tile.letter} id={tile.id} isDraggable={!tile.isPrePlaced} letterScores={letterScores}/>}
+          {tile && <Tile key={tile.id} letter={tile.letter} id={tile.id} isDraggable={!tile.isPrePlaced} letterScores={letterScores} tileSize={tileSize} />}
     </div>
   );
 };

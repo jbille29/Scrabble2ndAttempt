@@ -1,13 +1,12 @@
 // components/Board.jsx
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Square from './Square';
 import Tile from './Tile';
 import { extractWords, calculateScore, isConnected } from './utils/gameUtils';
 
 const Board = () => {
   const gridWidth = 8; // Set grid width for 8x8 grid
-  const gridCellSize = '50px'; // Size for each cell in the grid
-  const totalTiles = gridWidth * gridWidth; // Total number of tiles for an 8x8 grid
+  const [tileSize, setTileSize] = useState('50px');
 
   const letterScores = {
     A: 1, B: 3, C: 3, D: 2, E: 1,
@@ -45,7 +44,7 @@ const Board = () => {
   };
 
   // Initialize the board with nulls and include features and pre-placed tiles
-  const initialBoardState = Array(totalTiles).fill(null).map((_, index) => ({
+  const initialBoardState = Array(gridWidth*gridWidth).fill(null).map((_, index) => ({
     tile: prePlacedTiles.find(t => t.position === index) || null,
     feature: featureSquares[index] || null
   }));
@@ -54,6 +53,16 @@ const Board = () => {
   const [board, setBoard] = useState(initialBoardState);
   const [showModal, setShowModal] = useState(false);
   const [modalContent, setModalContent] = useState("");
+
+  useEffect(() => {
+    const updateTileSize = () => {
+      const size = Math.min(window.innerWidth / (gridWidth + 2), 60); // Example responsive calculation
+      setTileSize(`${size}px`);
+    };
+    window.addEventListener('resize', updateTileSize);
+    updateTileSize(); // Initial call to set size based on current viewport
+    return () => window.removeEventListener('resize', updateTileSize);
+  }, []);
 
   const moveTileToBoard = (tile, toIndex) => {
     const newBoard = [...board];
@@ -99,20 +108,20 @@ const Board = () => {
     <div>
       <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '20px' }}>
         {tilesInPool.map(tile => (
-          <Tile key={tile.id} letter={tile.letter} id={tile.id} isDraggable={!tile.isPrePlaced} letterScores={letterScores} />
+          <Tile key={tile.id} letter={tile.letter} id={tile.id} isDraggable={!tile.isPrePlaced} letterScores={letterScores} tileSize={tileSize}/>
         ))}
       </div>
       <div style={{ 
           display: 'grid',
-          gridTemplateColumns: `repeat(${gridWidth}, ${gridCellSize})`,
+          gridTemplateColumns: `repeat(${gridWidth}, ${tileSize})`,
           gap: '5px',
-          maxWidth: `${gridWidth * parseInt(gridCellSize)}px`,
+          maxWidth: `${gridWidth * parseInt(tileSize, 10)}px`,
           backgroundColor: '#ffffff', // Bright, clean background for the grid
           padding: '10px',
           boxShadow: '0 4px 8px rgba(0,0,0,0.1)' // Subtle shadow for depth
       }}>
         {board.map((square, index) => (
-          <Square key={index} id={index} onDrop={moveTileToBoard} returnTile={returnTileToArea} tile={square.tile} feature={square.feature} letterScores={letterScores}/>
+          <Square key={index} id={index} onDrop={moveTileToBoard} returnTile={returnTileToArea} tile={square.tile} feature={square.feature} letterScores={letterScores} tileSize={tileSize}/>
         ))}
       </div>
       <button 
