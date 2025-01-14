@@ -30,7 +30,16 @@ const Square = ({ onDrop, returnTile, tile, id, feature, letterScores }) => {
   }
 
   return (
-    <div ref={drop} style={{ width: '50px', height: '50px', backgroundColor, border: '1px solid #b0bec5', display: 'flex', justifyContent: 'center', alignItems: 'center' }}
+    <div ref={drop} 
+    style={{ 
+      width: '60px', 
+      height: '60px', 
+      backgroundColor, 
+      border: '1px solid #b0bec5', 
+      display: 'flex', 
+      justifyContent: 'center', 
+      alignItems: 'center' 
+    }}
          onDoubleClick={handleDoubleClick}>
           {tile && <Tile key={tile.id} letter={tile.letter} id={tile.id} isDraggable={!tile.isPrePlaced} letterScores={letterScores}/>}
     </div>
