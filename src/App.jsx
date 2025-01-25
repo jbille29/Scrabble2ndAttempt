@@ -20,7 +20,6 @@ function App() {
        display: 'flex',
        flexDirection: 'column',
        alignItems: 'center', // Centered horizontally
-       justifyContent: 'center', // Centered vertically
        padding: '40px 0', // Top and bottom padding only
        backgroundColor: '#f7f7f7', // Soft grey background
        minHeight: 'calc(100vh - 60px)', // Adjust for navbar height

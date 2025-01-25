@@ -12,16 +12,17 @@ const Tile = ({ letter, id, isDraggable, letterScores, tileSize, featureBackgrou
     }),
   }), [isDraggable]); // React on changes to isDraggable
 
+  const score = letter ? letterScores[letter.toUpperCase()] : ''; // Safely access scores
+
   // Adjust padding and font-size based on tile size
   const adjustedTileSize = parseInt(tileSize, 10);
-  const fontSize = Math.max(12, adjustedTileSize / 3);
+  const fontSize = Math.max(12, adjustedTileSize / 1.6);
   const paddingSize = Math.max(4, adjustedTileSize / 12);
 
   return (
     <div ref={isDraggable ? drag : preview} style={{
       opacity: isDragging ? 0.5 : 1,
       cursor: isDraggable ? 'move' : 'default',
-      fontWeight: 'bold',
       fontSize: `${fontSize}px`,
       textAlign: 'center',
       padding: `${paddingSize}px`,
@@ -39,15 +40,17 @@ const Tile = ({ letter, id, isDraggable, letterScores, tileSize, featureBackgrou
       userSelect: 'none',  // Prevent text selection
     }}>
       {letter}
+      {letter && ( // Render score only if there is a letter
       <span style={{
         position: 'absolute',
         bottom: '2px', // Close to the bottom
         left: '2px', // Close to the left
-        fontSize: `${Math.max(8, adjustedTileSize / 6)}px`,
+        fontSize: `${Math.max(8, adjustedTileSize / 4)}px`,
         color: 'rgba(0, 0, 0, 0.6)' // Slightly dimmed color for aesthetics
       }}>
-        {letterScores[letter.toUpperCase()]}
-      </span>
+         {score}
+        </span>
+      )}
     </div>
   );
 };

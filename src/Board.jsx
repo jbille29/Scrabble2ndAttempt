@@ -126,13 +126,58 @@ const Board = () => {
           <Square key={index} id={index} onDrop={moveTileToBoard} returnTile={returnTileToArea} tile={square.tile} feature={square.feature} letterScores={letterScores} tileSize={tileSize}/>
         ))}
       </div>
-      <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '20px' }}>
-        {tilesInPool.map(tile => (
-          <div style={{marginRight:'5px', marginTop:'25px'}} key={tile.id}>
-            <Tile key={tile.id} letter={tile.letter} id={tile.id} isDraggable={!tile.isPrePlaced} letterScores={letterScores} tileSize={tileSize} featureBackground={null}/>
-          </div>
-        ))}
+      
+      {/** Display the tiles in the pool */}
+      <div style={{ 
+          display: 'flex', 
+          justifyContent: 'center', 
+          flexWrap: 'wrap', 
+          marginBottom: '20px',
+          minHeight: '60px' // Ensure there's a minimum height even if empty
+      }}>
+          {tilesInPool.map(tile => (
+              <div style={{
+                  width: tileSize,
+                  height: tileSize,
+                  marginRight: '5px', 
+                  marginTop: '25px',
+                  display: 'flex',
+                  justifyContent: 'center', // Center the tile horizontally
+                  alignItems: 'center' // Center the tile vertically
+              }} key={tile.id}>
+                  {tile && (
+                      <Tile 
+                          letter={tile.letter} 
+                          id={tile.id} 
+                          isDraggable={!tile.isPrePlaced} 
+                          letterScores={letterScores} 
+                          tileSize={tileSize} 
+                          featureBackground={null}
+                      />
+                  )}
+              </div>
+          ))}
+          {Array(12 - tilesInPool.length).fill(null).map((_, index) => (
+              // Render invisible placeholders to maintain the layout
+              <div style={{
+                  width: tileSize,
+                  height: tileSize,
+                  marginRight: '5px',
+                  marginTop: '25px',
+                  visibility: 'hidden' // Make placeholders invisible
+              }} key={`placeholder-${index}`}>
+                  <Tile 
+                      letter="" 
+                      
+                      isDraggable={false}
+                      tileSize={tileSize}
+                      featureBackground={null}
+                  />
+              </div>
+          ))}
       </div>
+
+
       <button 
         onClick={handleCalculateScore} 
         style={{ 
