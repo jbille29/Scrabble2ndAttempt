@@ -92,11 +92,15 @@ const Board = () => {
   };
 
   const resetBoard = () => {
-    setBoard(Array(gridWidth * gridWidth).fill(null).map((_, index) => ({
+    // Reset the board to include both pre-placed tiles and their original features
+    const resetBoardState = Array(gridWidth * gridWidth).fill(null).map((_, index) => ({
       tile: prePlacedTiles.find(t => t.position === index) || null,
-    })));
+      feature: featureSquares[index] || null  // Ensure feature squares are maintained
+    }));
+    setBoard(resetBoardState);
     setTilesInPool([...letterPool]); // Reset tiles in pool to initial state
   };
+  
 
   const handleCalculateScore = () => {
     const words = extractWords(board, gridWidth);
