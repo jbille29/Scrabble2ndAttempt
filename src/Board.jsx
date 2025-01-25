@@ -4,6 +4,7 @@ import Tile from './Tile';
 import { extractWords, calculateScore, isConnected } from './utils/gameUtils';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faRedo } from '@fortawesome/free-solid-svg-icons';
+import LetterPool from './components/LetterPool';
 
 const Board = () => {
   const gridWidth = 8; // Set grid width for 8x8 grid
@@ -101,6 +102,22 @@ const Board = () => {
     setTilesInPool([...letterPool]); // Reset tiles in pool to initial state
   };
   
+ // Function to return a tile to the pool
+ const returnTileToPool = (tileId) => {
+  console.log("Attempting to return tile to pool:", tileId);
+  const tileIndex = board.findIndex(square => square.tile?.id === tileId);
+  if (tileIndex !== -1) {
+    const tile = board[tileIndex].tile;
+    console.log("Tile found on board at index:", tileIndex, tile);
+    board[tileIndex].tile = null;  // Remove the tile from the board
+    setBoard([...board]);
+    setTilesInPool([...tilesInPool, tile]);  // Add tile back to the pool
+    console.log("New board state:", newBoard);
+    console.log("New pool state:", [...tilesInPool, tile]);
+  } else {
+    console.log("Tile not found on board");
+  }
+};
 
   const handleCalculateScore = () => {
     const words = extractWords(board, gridWidth);
@@ -131,55 +148,13 @@ const Board = () => {
         ))}
       </div>
       
-      {/** Display the tiles in the pool */}
-      <div style={{ 
-          display: 'flex', 
-          justifyContent: 'center', 
-          flexWrap: 'wrap', 
-          marginBottom: '20px',
-          minHeight: '60px' // Ensure there's a minimum height even if empty
-      }}>
-          {tilesInPool.map(tile => (
-              <div style={{
-                  width: tileSize,
-                  height: tileSize,
-                  marginRight: '5px', 
-                  marginTop: '25px',
-                  display: 'flex',
-                  justifyContent: 'center', // Center the tile horizontally
-                  alignItems: 'center' // Center the tile vertically
-              }} key={tile.id}>
-                  {tile && (
-                      <Tile 
-                          letter={tile.letter} 
-                          id={tile.id} 
-                          isDraggable={!tile.isPrePlaced} 
-                          letterScores={letterScores} 
-                          tileSize={tileSize} 
-                          featureBackground={null}
-                      />
-                  )}
-              </div>
-          ))}
-          {Array(12 - tilesInPool.length).fill(null).map((_, index) => (
-              // Render invisible placeholders to maintain the layout
-              <div style={{
-                  width: tileSize,
-                  height: tileSize,
-                  marginRight: '5px',
-                  marginTop: '25px',
-                  visibility: 'hidden' // Make placeholders invisible
-              }} key={`placeholder-${index}`}>
-                  <Tile 
-                      letter="" 
-                      
-                      isDraggable={false}
-                      tileSize={tileSize}
-                      featureBackground={null}
-                  />
-              </div>
-          ))}
-      </div>
+      <LetterPool 
+        tilesInPool={tilesInPool} 
+        setTilesInPool={setTilesInPool} 
+        tileSize={tileSize} 
+        letterScores={letterScores} 
+        returnTileToPool={returnTileToPool} 
+      />
 
 
       <button 
