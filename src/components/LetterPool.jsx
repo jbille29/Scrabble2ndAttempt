@@ -7,7 +7,6 @@ const LetterPool = ({ tilesInPool, setTilesInPool, tileSize, letterScores, retur
   const [, drop] = useDrop({
     accept: 'tile',
     drop: (item) => {
-        console.log("Dropped item in pool:", item);
         returnTileToPool(item.id)
     },
     collect: monitor => ({
@@ -17,23 +16,34 @@ const LetterPool = ({ tilesInPool, setTilesInPool, tileSize, letterScores, retur
   });
 
   return (
-    <div ref={drop} style={{ 
+    <div ref={drop} 
+      className='letterpool-container'
+      style={{ 
         display: 'flex', 
         justifyContent: 'center', 
         flexWrap: 'wrap', 
         marginBottom: '20px',
-        minHeight: '60px',
-        backgroundColor: '#f0f0f0'  // Optional: visual feedback for drop area
+       
+        height: 'auto', // Allows height to grow
+        maxHeight: '300px', // Sets maximum height
+        width: "100%", // Sets minimum width
+        overflow: 'hidden', // Allows scrolling inside the container if content overflows
+        boxShadow: 'inset 0 1px 3px rgba(0, 0, 0, 0.25)', // Inset shadow
+        borderRadius: '8px', // Rounded corners
+        marginTop: '20px', // Centers the pool
+        paddingTop: '5px', // Adds padding to the top
+        paddingBottom: '10px' // Adds padding to the bottom
     }}>
       {tilesInPool.map(tile => (
         <div style={{
             width: tileSize,
             height: tileSize,
             marginRight: '5px', 
-            marginTop: '25px',
+            marginTop: '5px', // Reduced margin-top for uniformity
             display: 'flex',
             justifyContent: 'center',
-            alignItems: 'center'
+            alignItems: 'center',
+           
         }} key={tile.id}>
           <Tile 
             key={tile.id}

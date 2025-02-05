@@ -41,7 +41,7 @@ export const extractWords = (board, gridWidth) => {
       }
       
     return words;
-  };
+};
   
   export const calculateScore = (words, letterScores, setModalContent, setShowModal) => {
     let score = 0;

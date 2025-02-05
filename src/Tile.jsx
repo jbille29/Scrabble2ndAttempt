@@ -2,7 +2,7 @@
 import React from 'react';
 import { useDrag } from 'react-dnd';
 
-const Tile = ({ letter, id, isDraggable, letterScores, tileSize, featureBackground }) => {
+const Tile = ({ letter, id, isDraggable, letterScores, tileSize, featureBackground}) => {
   const [{ isDragging }, drag, preview] = useDrag(() => ({
     type: 'tile',
     item: { id, letter },
@@ -27,7 +27,7 @@ const Tile = ({ letter, id, isDraggable, letterScores, tileSize, featureBackgrou
       textAlign: 'center',
       padding: `${paddingSize}px`,
       margin: '0',
-      border: '1px solid #b0bec5', // Subtle blue-gray 
+      border: '1px solid #ccc',
       backgroundColor: featureBackground ? 'transparent' : '#f2d1c9', // Bright white background for the tile
       position: 'relative', // Position relative to place the score inside
       width: tileSize, // Ensure the width matches the grid

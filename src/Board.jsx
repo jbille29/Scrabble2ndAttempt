@@ -1,14 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import Square from './Square';
-import Tile from './Tile';
 import { extractWords, calculateScore, isConnected } from './utils/gameUtils';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faRedo } from '@fortawesome/free-solid-svg-icons';
+import { FaArrowRotateRight } from "react-icons/fa6";
 import LetterPool from './components/LetterPool';
+import axios from 'axios';
 
 const Board = () => {
-  const gridWidth = 8; // Set grid width for 8x8 grid
+  const gridWidth = 6; // Set grid width for 8x8 grid
   const [tileSize, setTileSize] = useState('50px');
+
+  // Define a list of valid words for simplicity
+  const validWords = ['BIG', 'APPLE', 'ORANGE', 'GRAPE', 'BANANA', 'CHERRY', 'DATE', 'FIG'];
 
   const letterScores = {
     A: 1, B: 3, C: 3, D: 2, E: 1,
@@ -18,14 +20,18 @@ const Board = () => {
     U: 1, V: 4, W: 4, X: 8, Y: 4,
     Z: 10
   };
+  /*
+  const [prePlacedTiles, setPrePlacedTiles] = useState([]);
+    const [letterPool, setLetterPool] = useState([]);
+    const [featureSquares, setFeatureSquares] = useState({});
+    const [validWords, setValidWords] = useState({});
+  */
   
   // Define pre-placed tiles and their positions on an 8x8 board
   const prePlacedTiles = [
     { id: 1, letter: 'R', position: 10, isPrePlaced: true },
     { id: 2, letter: 'B', position: 20, isPrePlaced: true },
     { id: 3, letter: 'C', position: 30, isPrePlaced: true },
-    { id: 4, letter: 'M', position: 40, isPrePlaced: true },
-    { id: 5, letter: 'N', position: 50, isPrePlaced: true },
   ];
 
   // Define tiles in the letter pool
@@ -37,18 +43,44 @@ const Board = () => {
     { id: 10, letter: 'H', isPrePlaced: false },
     { id: 11, letter: 'I', isPrePlaced: false },
     { id: 12, letter: 'J', isPrePlaced: false },
+     { id: 13, letter: 'H', isPrePlaced: false },
+    { id: 14, letter: 'I', isPrePlaced: false },
+    { id: 15, letter: 'J', isPrePlaced: false },
   ];
 
   const featureSquares = {
-    3: { type: 'doubleScore', multiplier: 2 },
-    7: { type: 'subtractPoints', multiplier: -1 },
-    20: { type: 'tripleScore', multiplier: 3 }
+    3: { type: 'doubleLetterScore', multiplier: 2 },
+    20: { type: 'doubleLetterScore', multiplier: 2 },
+    7: { type: 'doubleLetterScore', multiplier: 2 },
   };
+  
 
+  /*
+const fetchScrabbleSetup = async () => {
+  try {
+      const response = await axios.get('http://localhost:3000/next-game');
+      const { prePlacedTiles, letterPool, featureSquares, validWords } = response.data;
+      console.log('Scrabble setup:', prePlacedTiles, letterPool, featureSquares, validWords);
+      setPrePlacedTiles(prePlacedTiles);
+      setLetterPool(letterPool);
+      setFeatureSquares(featureSquares);
+      setValidWords(validWords);
+  } catch (error) {
+      console.error('Error fetching Scrabble setup:', error);
+      alert('Failed to fetch game setup');
+  }
+};
+
+
+useEffect(() => {
+  fetchScrabbleSetup();
+}, []);
+*/
   // Initialize the board with nulls and include features and pre-placed tiles
   const initialBoardState = Array(gridWidth*gridWidth).fill(null).map((_, index) => ({
     tile: prePlacedTiles.find(t => t.position === index) || null,
-    feature: featureSquares[index] || null
+    feature: featureSquares[index] || null,
+    isValid: false // New state to track if the tile placement is valid
   }));
 
   const [tilesInPool, setTilesInPool] = useState(letterPool);
@@ -65,6 +97,30 @@ const Board = () => {
     updateTileSize(); // Initial call to set size based on current viewport
     return () => window.removeEventListener('resize', updateTileSize);
   }, []);
+
+
+  const validateTiles = (board, gridWidth) => {
+    // Check horizontally and vertically if words are valid
+    let isValid = true;
+    const words = extractWords(board, gridWidth); // Assume this function extracts all words formed on the board
+
+    // Check each word if it's valid
+    words.forEach(word => {
+      if (!validWords.includes(word.toUpperCase())) {
+        isValid = false;
+      }
+    });
+
+    // Update the board with the validity state for each tile
+    const newBoard = board.map(square => {
+      if (square.tile && words.includes(square.tile.letter)) {
+        return { ...square, isValid: isValid };
+      }
+      return square;
+    });
+
+    return newBoard;
+  };
 
   const moveTileToBoard = (tile, toIndex) => {
     const newBoard = [...board];
@@ -96,35 +152,33 @@ const Board = () => {
     // Reset the board to include both pre-placed tiles and their original features
     const resetBoardState = Array(gridWidth * gridWidth).fill(null).map((_, index) => ({
       tile: prePlacedTiles.find(t => t.position === index) || null,
-      feature: featureSquares[index] || null  // Ensure feature squares are maintained
+      feature: featureSquares[index] || null,  // Ensure feature squares are maintained
+      isValid: false
     }));
-    setBoard(resetBoardState);
+    setBoard(validateTiles(resetBoardState, gridWidth));
     setTilesInPool([...letterPool]); // Reset tiles in pool to initial state
   };
   
- // Function to return a tile to the pool
- const returnTileToPool = (tileId) => {
-  console.log("Attempting to return tile to pool:", tileId);
-  const tileIndex = board.findIndex(square => square.tile?.id === tileId);
-  if (tileIndex !== -1) {
-    const tile = board[tileIndex].tile;
-    console.log("Tile found on board at index:", tileIndex, tile);
-    board[tileIndex].tile = null;  // Remove the tile from the board
-    setBoard([...board]);
-    setTilesInPool([...tilesInPool, tile]);  // Add tile back to the pool
-    console.log("New board state:", newBoard);
-    console.log("New pool state:", [...tilesInPool, tile]);
-  } else {
-    console.log("Tile not found on board");
-  }
-};
+  // Function to return a tile to the pool
+  const returnTileToPool = (tileId) => {
+    const tileIndex = board.findIndex(square => square.tile?.id === tileId);
+    if (tileIndex !== -1) {
+      const tile = board[tileIndex].tile;
+      board[tileIndex].tile = null;  // Remove the tile from the board
+      setBoard([...board]);
+      setTilesInPool([...tilesInPool, tile]);  // Add tile back to the pool
+    }
+  };
 
   const handleCalculateScore = () => {
+    const newBoard = validateTiles(board, gridWidth);
+    setBoard(newBoard);
+
     const words = extractWords(board, gridWidth);
-    if (isConnected(board, gridWidth)) {
+    if (isConnected(board, gridWidth) && words.every(word => validWords.includes(word.toUpperCase()))) {
       calculateScore(words, letterScores, setModalContent, setShowModal);
     } else {
-      setModalContent("Tiles are not properly connected.");
+      setModalContent("Tiles are not properly connected or words are invalid.");
       setShowModal(true);
     }
   };
@@ -133,15 +187,29 @@ const Board = () => {
     setShowModal(false);
   };
 
+// Calculate the total width of the grid
+const paddingTotal = 10 * 2; // 10px padding on each side
+const gapTotal = (gridWidth - 1) * 5; // Total gap based on number of gaps
+const totalWidth = parseInt(tileSize) * gridWidth + gapTotal + paddingTotal;
+
   return (
-    <div>
-      <div style={{ 
+    <div style={{
+      '--grid-width': `${totalWidth}px`,  // CSS Variable
+      width: 'var(--grid-width)', // Full width
+      display: "flex",
+      flexDirection: "column",
+      justifyContent: "center",
+      alignItems: "center",
+      
+    }}>
+      <div className="board-container" style={{ 
           display: 'grid',
           gridTemplateColumns: `repeat(${gridWidth}, ${tileSize})`,
           gap: '5px',
-          backgroundColor: '#ffffff', // Bright, clean background for the grid
           padding: '10px',
-          boxShadow: '0 4px 8px rgba(0,0,0,0.1)' // Subtle shadow for depth
+          boxShadow: '0 4px 8px rgba(0,0,0,0.1)', // Subtle shadow for depth
+          borderRadius: '8px', // Rounded corners
+          boxSizing: "border-box",
         }}>
         {board.map((square, index) => (
           <Square key={index} id={index} onDrop={moveTileToBoard} returnTile={returnTileToArea} tile={square.tile} feature={square.feature} letterScores={letterScores} tileSize={tileSize}/>
@@ -154,24 +222,29 @@ const Board = () => {
         tileSize={tileSize} 
         letterScores={letterScores} 
         returnTileToPool={returnTileToPool} 
+        
       />
 
-
-      <button 
-        onClick={handleCalculateScore} 
-        style={{ 
-          marginTop: '20px',
-          backgroundColor: '#4CAF50', // Vibrant green color
-          color: 'white',
-          border: 'none',
-          padding: '10px 20px',
-          cursor: 'pointer',
-          fontSize: '16px',
-          borderRadius: '5px'
-        }}>Submit</button>
-        <div style={{ marginBottom: '20px' }}>
-        <FontAwesomeIcon icon={faRedo} onClick={resetBoard} style={{ cursor: 'pointer', color: '#333', fontSize: '24px' }} />
+      <div
+        style={{
+          width: '100%',
+          display: 'flex',
+          justifyContent: 'space-between',
+        }}>
+          <FaArrowRotateRight 
+            style={{
+                border: "none",
+                color: "#455a64",
+                cursor: "pointer",
+                fontSize: "24px",
+                padding: "5px 10px",
+                borderRadius: "5px"
+            }}
+          />
+          <button onClick={handleCalculateScore}>Submit</button>
+          <div style={{width: '43px'}}></div>
       </div>
+     
       {showModal && (
         <div 
           style={{ 

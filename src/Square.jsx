@@ -6,7 +6,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faTimes, faMinus, faArrowUp } from '@fortawesome/free-solid-svg-icons';
 
 const featureStyles = {
-  doubleScore: {
+  doubleLetterScore: {
     backgroundColor: '#b6e6bd',
     icon: <FontAwesomeIcon icon={faTimes} />, // Example icon for double score
     iconText: 'x2'
@@ -16,14 +16,14 @@ const featureStyles = {
     icon: <FontAwesomeIcon icon={faMinus} />, // Example icon for subtract points
     iconText: ''
   },
-  tripleScore: {
+  tripleLetterScore: {
     backgroundColor: '#f9d67a',
     icon: <FontAwesomeIcon icon={faArrowUp} />, // Example icon for triple score
     iconText: 'x3'
   }
 };
 
-const Square = ({ onDrop, returnTile, tile, id, feature, letterScores, tileSize }) => {
+const Square = ({ onDrop, returnTile, tile, id, feature, letterScores, tileSize}) => {
   const [{ isOver, canDrop }, drop] = useDrop({
     accept: 'tile',
     drop: (item) => onDrop(item, id),
@@ -38,14 +38,13 @@ const Square = ({ onDrop, returnTile, tile, id, feature, letterScores, tileSize 
     returnTile(id);
   };
 
-  let backgroundColor = tile ? 'transparent' : (feature && featureStyles[feature.type] ? featureStyles[feature.type].backgroundColor : '#e3e8f8');
+  let backgroundColor = tile ? 'transparent' : (feature && featureStyles[feature.type] ? featureStyles[feature.type].backgroundColor : '#DDE6EF');
   let icon = null; // No icon by default
   let iconText = '';
   
   // Apply feature styles if the feature exists
   if (feature && featureStyles[feature.type]) {
     backgroundColor = featureStyles[feature.type].backgroundColor;
-    console.log(feature)
     icon = featureStyles[feature.type].icon;
     iconText = featureStyles[feature.type].iconText;
   }
@@ -58,6 +57,7 @@ const Square = ({ onDrop, returnTile, tile, id, feature, letterScores, tileSize 
 
   return (
     <div ref={drop} 
+    className='empty-square'
     style={{ 
       width: tileSize,
       height: tileSize,
@@ -72,7 +72,7 @@ const Square = ({ onDrop, returnTile, tile, id, feature, letterScores, tileSize 
       userSelect: 'none',  // Prevent text selection
     }}
          onDoubleClick={handleDoubleClick}>
-          {tile && <Tile key={tile.id} letter={tile.letter} id={tile.id} isDraggable={!tile.isPrePlaced} letterScores={letterScores} tileSize={tileSize} featureBackground={feature ? featureStyles[feature.type].backgroundColor : null} />}
+          {tile && <Tile key={tile.id} letter={tile.letter} id={tile.id} isDraggable={!tile.isPrePlaced} letterScores={letterScores} tileSize={tileSize} featureBackground={feature ? featureStyles[feature.type].backgroundColor : null}/>}
           {feature && feature.icon && (
             <div style={{
               position: 'absolute',
