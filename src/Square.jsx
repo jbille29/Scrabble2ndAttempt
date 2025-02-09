@@ -7,7 +7,7 @@ import { faTimes, faMinus, faArrowUp } from '@fortawesome/free-solid-svg-icons';
 
 const featureStyles = {
   doubleLetterScore: {
-    backgroundColor: '#c7f7c6',
+    backgroundColor: 'red',
     icon: <FontAwesomeIcon icon={faTimes} />, // Example icon for double score
     iconText: 'x2'
   },
@@ -17,9 +17,19 @@ const featureStyles = {
     iconText: ''
   },
   tripleLetterScore: {
-    backgroundColor: '#f9d67a',
+    backgroundColor: 'red',
     icon: <FontAwesomeIcon icon={faArrowUp} />, // Example icon for triple score
     iconText: 'x3'
+  },
+  doubleWordScore: {
+    backgroundColor: 'blue',
+    icon: <FontAwesomeIcon icon={faArrowUp} />, // Example icon for triple score
+    iconText: 'wx2'
+  },
+  tripleWordScore: {
+    backgroundColor: 'blue',
+    icon: <FontAwesomeIcon icon={faArrowUp} />, // Example icon for triple score
+    iconText: 'wx3'
   }
 };
 

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import Square from './Square';
-import { extractWords, calculateScore, isConnected } from './utils/gameUtils';
+import { extractWords, calculateScore, isConnected, extractWordsAgain } from './utils/gameUtils';
 import { FaArrowRotateRight } from "react-icons/fa6";
 import LetterPool from './components/LetterPool';
 import axios from 'axios';
@@ -10,7 +10,7 @@ const Board = () => {
   const [tileSize, setTileSize] = useState('50px');
 
   // Define a list of valid words for simplicity
-  const validWords = ['RED','BED', 'BIG', 'APPLE', 'ORANGE', 'GRAPE', 'BANANA', 'CHERRY', 'DATE', 'FIG'];
+  const validWords = ['HIIR', 'FI', 'FIIG', 'BG', 'DGE', 'DEIR', 'BEG', 'FE', 'IDER', 'IR', 'RED','BED', 'BIG', 'APPLE', 'ORANGE', 'GRAPE', 'BANANA', 'CHERRY', 'DATE', 'FIG'];
 
   const letterScores = {
     A: 1, B: 3, C: 3, D: 2, E: 1,
@@ -49,9 +49,9 @@ const Board = () => {
   ];
 
   const featureSquares = {
-    3: { type: 'doubleLetterScore', multiplier: 2 },
+    3: { type: 'tripleWordScore', multiplier: 3 },
     20: { type: 'doubleLetterScore', multiplier: 2 },
-    7: { type: 'tripleLetterScore', multiplier: 3 },
+    7: { type: 'doubleWordScore', multiplier: 2 },
   };
   
 
@@ -184,8 +184,8 @@ useEffect(() => {
       setModalContent("One or more words are not valid. Please check and try again.");
       setShowModal(true);
     } else {
-      console.log('nice')
-      calculateScore(words, letterScores, setModalContent, setShowModal);
+
+      calculateScore(board, extractWordsAgain(board, gridWidth), letterScores, setModalContent, setShowModal);
     }
     
   };
