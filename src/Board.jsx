@@ -10,7 +10,7 @@ const Board = () => {
   const [tileSize, setTileSize] = useState('50px');
 
   // Define a list of valid words for simplicity
-  const validWords = ['BIG', 'APPLE', 'ORANGE', 'GRAPE', 'BANANA', 'CHERRY', 'DATE', 'FIG'];
+  const validWords = ['RED','BED', 'BIG', 'APPLE', 'ORANGE', 'GRAPE', 'BANANA', 'CHERRY', 'DATE', 'FIG'];
 
   const letterScores = {
     A: 1, B: 3, C: 3, D: 2, E: 1,
@@ -51,7 +51,7 @@ const Board = () => {
   const featureSquares = {
     3: { type: 'doubleLetterScore', multiplier: 2 },
     20: { type: 'doubleLetterScore', multiplier: 2 },
-    7: { type: 'doubleLetterScore', multiplier: 2 },
+    7: { type: 'tripleLetterScore', multiplier: 3 },
   };
   
 
@@ -99,14 +99,15 @@ useEffect(() => {
   }, []);
 
 
-  const validateTiles = (board, gridWidth) => {
+  const validateWords = (board, gridWidth) => {
     // Check horizontally and vertically if words are valid
     let isValid = true;
     const words = extractWords(board, gridWidth); // Assume this function extracts all words formed on the board
-
+    console.log('Words:', words);
     // Check each word if it's valid
     words.forEach(word => {
       if (!validWords.includes(word.toUpperCase())) {
+        console.log('Invalid word:', word);
         isValid = false;
       }
     });
@@ -155,7 +156,7 @@ useEffect(() => {
       feature: featureSquares[index] || null,  // Ensure feature squares are maintained
       isValid: false
     }));
-    setBoard(validateTiles(resetBoardState, gridWidth));
+    setBoard(validateWords(resetBoardState, gridWidth));
     setTilesInPool([...letterPool]); // Reset tiles in pool to initial state
   };
   
@@ -171,16 +172,22 @@ useEffect(() => {
   };
 
   const handleCalculateScore = () => {
-    const newBoard = validateTiles(board, gridWidth);
+    const newBoard = validateWords(board, gridWidth);
     setBoard(newBoard);
 
     const words = extractWords(board, gridWidth);
-    if (isConnected(board, gridWidth) && words.every(word => validWords.includes(word.toUpperCase()))) {
-      calculateScore(words, letterScores, setModalContent, setShowModal);
-    } else {
-      setModalContent("Tiles are not properly connected or words are invalid.");
+    
+    if (!isConnected(board, gridWidth)) {
+      setModalContent("Please ensure all tiles are connected to an anchor tile.");
       setShowModal(true);
+    } else if (!words.every(word => validWords.includes(word.toUpperCase()))) {
+      setModalContent("One or more words are not valid. Please check and try again.");
+      setShowModal(true);
+    } else {
+      console.log('nice')
+      calculateScore(words, letterScores, setModalContent, setShowModal);
     }
+    
   };
 
   const handleCloseModal = () => {
@@ -222,7 +229,6 @@ const totalWidth = parseInt(tileSize) * gridWidth + gapTotal + paddingTotal;
         tileSize={tileSize} 
         letterScores={letterScores} 
         returnTileToPool={returnTileToPool} 
-        
       />
 
       <div

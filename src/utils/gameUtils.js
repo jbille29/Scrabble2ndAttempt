@@ -1,5 +1,3 @@
-const validWords = ['ED', 'RG', 'ER','APPLE', 'ORANGE', 'GRAPE', 'BANANA', 'CHERRY'];
-
 
 // utils/gameUtils.js
 export const extractWords = (board, gridWidth) => {
@@ -45,15 +43,10 @@ export const extractWords = (board, gridWidth) => {
   
   export const calculateScore = (words, letterScores, setModalContent, setShowModal) => {
     let score = 0;
-    const valid = words.every(word => validWords.includes(word.toUpperCase()));
-    if (valid) {
-      words.forEach(word => {
+    words.forEach(word => {
         score += word.split('').reduce((acc, letter) => acc + letterScores[letter.toUpperCase()], 0);
-      });
-      setModalContent(`Your score is: ${score}`);
-    } else {
-      setModalContent("Invalid words or tile placement.");
-    }
+    });
+    setModalContent(`Your score is: ${score}`);
     setShowModal(true);
   };
   
@@ -63,39 +56,46 @@ export const extractWords = (board, gridWidth) => {
     let queue = [];
     let startFound = false;
   
-    // Find the first pre-placed or any placed tile to start the BFS
+    // Enqueue all pre-placed tiles
     for (let i = 0; i < gridWidth * gridWidth; i++) {
       if (board[i].tile && board[i].tile.isPrePlaced) {
-        queue.push(i);
-        visited[i] = true;
-        startFound = true;
-        break;
+          console.log(`Processing pre-placed tile at index ${i}`);
+          queue.push(i);
+          visited[i] = true;
+          startFound = true;
       }
     }
-  
-    // If no starting tile is found (unlikely in your current setup), return false
-    if (!startFound) return false;
+    // If no pre-placed tile is found, return false
+    if (!startFound) {
+      console.log("No pre-placed tiles found to start connection check.");
+      return false;
+    }
   
     // Perform BFS to mark all reachable tiles
     while (queue.length > 0) {
       let current = queue.shift();
       let x = Math.floor(current / gridWidth);
       let y = current % gridWidth;
-  
+
       directions.forEach(([dx, dy]) => {
-        let nx = x + dx;
-        let ny = y + dy;
-        let index = nx * gridWidth + ny;
-  
-        if (nx >= 0 && nx < gridWidth && ny >= 0 && ny < gridWidth && !visited[index] && board[index].tile) {
-          visited[index] = true;
-          queue.push(index);
-        }
+          let nx = x + dx;
+          let ny = y + dy;
+          let index = nx * gridWidth + ny;
+
+          if (nx >= 0 && nx < gridWidth && ny >= 0 && ny < gridWidth && !visited[index] && board[index].tile) {
+              console.log(`Visiting tile at index ${index} from (${x}, ${y}) to (${nx}, ${ny})`);
+              visited[index] = true;
+              queue.push(index);
+          }
       });
     }
   
-    // Check if all tiles that are not pre-placed are visited
-    return board.every((square, index) => !square.tile || square.tile.isPrePlaced || visited[index]);
+     // Verify all tiles that are placed (but not pre-placed) are connected
+     const allConnected = board.every((square, index) => !square.tile || square.tile.isPrePlaced || visited[index]);
+     if (!allConnected) {
+         console.log("Not all placed tiles are connected to a pre-placed tile.");
+     }
+     return allConnected;
   };
   
   

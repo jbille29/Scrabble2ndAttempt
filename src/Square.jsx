@@ -7,7 +7,7 @@ import { faTimes, faMinus, faArrowUp } from '@fortawesome/free-solid-svg-icons';
 
 const featureStyles = {
   doubleLetterScore: {
-    backgroundColor: '#b6e6bd',
+    backgroundColor: '#c7f7c6',
     icon: <FontAwesomeIcon icon={faTimes} />, // Example icon for double score
     iconText: 'x2'
   },
@@ -57,32 +57,30 @@ const Square = ({ onDrop, returnTile, tile, id, feature, letterScores, tileSize}
 
   return (
     <div ref={drop} 
-    className='empty-square'
-    style={{ 
-      width: tileSize,
-      height: tileSize,
-      backgroundColor, 
-      display: 'flex', 
-      justifyContent: 'center', 
-      alignItems: 'center',
-      boxSizing: 'border-box',
-      padding: '0',
-       position: 'relative',
-      borderRadius: '5px',
-      userSelect: 'none',  // Prevent text selection
-    }}
-         onDoubleClick={handleDoubleClick}>
-          {tile && <Tile key={tile.id} letter={tile.letter} id={tile.id} isDraggable={!tile.isPrePlaced} letterScores={letterScores} tileSize={tileSize} featureBackground={feature ? featureStyles[feature.type].backgroundColor : null}/>}
-          {feature && feature.icon && (
-            <div style={{
-              position: 'absolute',
-              fontSize: '12px',
-              color: '#333',
-              bottom: '5px',
-              right: '5px'
-            }}>
-          {feature.icon}{feature.iconText}
-        </div>
+      className='empty-square'
+      onDoubleClick={handleDoubleClick}
+      style={{ 
+        width: tileSize,
+        height: tileSize,
+        backgroundColor, 
+        display: 'flex', 
+        justifyContent: 'center', 
+        alignItems: 'center',
+        boxSizing: 'border-box',
+        padding: '0',
+        position: 'relative',
+        borderRadius: '5px',
+        userSelect: 'none',  // Prevent text selection
+    }}>
+      {tile && <Tile key={tile.id} letter={tile.letter} id={tile.id} isDraggable={!tile.isPrePlaced} letterScores={letterScores} tileSize={tileSize} featureBackground={feature ? featureStyles[feature.type].backgroundColor : null} featureText={feature ? featureStyles[feature.type].iconText : null}/>} 
+      {!tile && feature && (
+        <span style={{
+          
+          fontSize: `25px`,
+          color: 'rgba(0, 0, 0, 0.6)'
+        }}>
+          {featureStyles[feature.type].iconText}
+        </span>
       )}
     </div>
   );

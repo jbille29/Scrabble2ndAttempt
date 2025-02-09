@@ -2,7 +2,8 @@
 import React from 'react';
 import { useDrag } from 'react-dnd';
 
-const Tile = ({ letter, id, isDraggable, letterScores, tileSize, featureBackground}) => {
+const Tile = ({ letter, id, isDraggable, letterScores, tileSize, featureBackground, featureText}) => {
+  
   const [{ isDragging }, drag, preview] = useDrag(() => ({
     type: 'tile',
     item: { id, letter },
@@ -49,6 +50,18 @@ const Tile = ({ letter, id, isDraggable, letterScores, tileSize, featureBackgrou
         color: 'rgba(0, 0, 0, 0.6)' // Slightly dimmed color for aesthetics
       }}>
          {score}
+        </span>
+      )}
+
+      {featureText && (
+        <span style={{
+          position: 'absolute',
+          bottom: '2px',
+          right: '2px',
+          fontSize: `${Math.max(8, adjustedTileSize / 4)}px`,
+          color: 'rgba(0, 0, 0, 0.6)'
+        }}>
+          {featureText}
         </span>
       )}
     </div>
