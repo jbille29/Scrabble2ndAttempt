@@ -3,7 +3,7 @@ import React from 'react';
 import Tile from '../Tile';
 import { useDrop } from 'react-dnd';
 
-const LetterPool = ({ tilesInPool, setTilesInPool, tileSize, letterScores, returnTileToPool }) => {
+const LetterPool = ({ tilesInPool, tileSize, letterScores, returnTileToPool }) => {
   const [, drop] = useDrop({
     accept: 'tile',
     drop: (item) => {

@@ -8,9 +8,11 @@ import axios from 'axios';
 const Board = () => {
   const gridWidth = 6; // Set grid width for 8x8 grid
   const [tileSize, setTileSize] = useState('50px');
-
-  // Define a list of valid words for simplicity
-  const validWords = ['HIIR', 'FI', 'FIIG', 'BG', 'DGE', 'DEIR', 'BEG', 'FE', 'IDER', 'IR', 'RED','BED', 'BIG', 'APPLE', 'ORANGE', 'GRAPE', 'BANANA', 'CHERRY', 'DATE', 'FIG'];
+  const [tilesInPool, setTilesInPool] = useState([]);
+  
+  const [showModal, setShowModal] = useState(false);
+  const [modalContent, setModalContent] = useState("");
+  const [validWords, setValidWords] = useState([]);
 
   const letterScores = {
     A: 1, B: 3, C: 3, D: 2, E: 1,
@@ -20,21 +22,13 @@ const Board = () => {
     U: 1, V: 4, W: 4, X: 8, Y: 4,
     Z: 10
   };
-  /*
-  const [prePlacedTiles, setPrePlacedTiles] = useState([]);
-    const [letterPool, setLetterPool] = useState([]);
-    const [featureSquares, setFeatureSquares] = useState({});
-    const [validWords, setValidWords] = useState({});
-  */
-  
-  // Define pre-placed tiles and their positions on an 8x8 board
+
+  // FAKE API DATA
   const prePlacedTiles = [
     { id: 1, letter: 'R', position: 10, isPrePlaced: true },
     { id: 2, letter: 'B', position: 20, isPrePlaced: true },
     { id: 3, letter: 'C', position: 30, isPrePlaced: true },
   ];
-
-  // Define tiles in the letter pool
   const letterPool = [
     { id: 6, letter: 'D', isPrePlaced: false },
     { id: 7, letter: 'E', isPrePlaced: false },
@@ -47,47 +41,125 @@ const Board = () => {
     { id: 14, letter: 'I', isPrePlaced: false },
     { id: 15, letter: 'J', isPrePlaced: false },
   ];
-
   const featureSquares = {
     3: { type: 'tripleWordScore', multiplier: 3 },
     20: { type: 'doubleLetterScore', multiplier: 2 },
     7: { type: 'doubleWordScore', multiplier: 2 },
   };
+
+  const setupBoard = () => {
+    const initialBoardState = Array(gridWidth * gridWidth).fill(null).map((_, index) => ({
+      tile: prePlacedTiles.find(t => t.position === index) || null,
+      feature: featureSquares[index] || null,
+      isValid: false
+    }));
+    console.log("Set up board!");
+    return initialBoardState;
+  }
   
 
-  /*
-const fetchScrabbleSetup = async () => {
-  try {
-      const response = await axios.get('http://localhost:3000/next-game');
-      const { prePlacedTiles, letterPool, featureSquares, validWords } = response.data;
-      console.log('Scrabble setup:', prePlacedTiles, letterPool, featureSquares, validWords);
-      setPrePlacedTiles(prePlacedTiles);
-      setLetterPool(letterPool);
-      setFeatureSquares(featureSquares);
-      setValidWords(validWords);
-  } catch (error) {
-      console.error('Error fetching Scrabble setup:', error);
-      alert('Failed to fetch game setup');
-  }
-};
+  const [board, setBoard] = useState(setupBoard());
+
+  // INITIALIZE BOARD
+  useEffect(() => {
+
+      const fetchData = async () => {
+        const today = new Date().toLocaleDateString();
+        const localData = JSON.parse(localStorage.getItem('gameState'));
+    
+        // Check if local data exists and is from today
+        if (localData && localData.date === today) {
+          console.log("Using local data");
+          setTilesInPool(localData.tilesInPool);
+          setBoard(localData.board);
+          console.log("Local data:", localData);
+        } else {
+          console.log("Fetching new game data");
+        // Fetch new data (uncomment the appropriate line when using the API)
+        // const response = await axios.get('http://localhost:3000/next-game');
+        // const { prePlacedTiles, letterPool, featureSquares, validWords } = response.data;
+
+        // Dummy data simulation
+        const prePlacedTiles = [
+          { id: 1, letter: 'R', position: 10, isPrePlaced: true },
+          { id: 2, letter: 'B', position: 20, isPrePlaced: true },
+          { id: 3, letter: 'C', position: 30, isPrePlaced: true },
+        ];
+        const letterPool = [
+          { id: 6, letter: 'D', isPrePlaced: false },
+          { id: 7, letter: 'E', isPrePlaced: false },
+          { id: 8, letter: 'F', isPrePlaced: false },
+          // add more if needed
+        ];
+        const featureSquares = {
+          3: { type: 'tripleWordScore', multiplier: 3 },
+          20: { type: 'doubleLetterScore', multiplier: 2 },
+          // add more if needed
+        };
+
+        const validWords = ['HIIR', 'FI', 'FIIG', 'BG', 'DGE','IHB','CDJJ', 'DEIR', 'BEG', 'FE', 'IDER', 'IR', 'RED','BED', 'BIG', 'APPLE', 'ORANGE', 'GRAPE', 'BANANA', 'CHERRY', 'DATE', 'FIG'];
+
+        const initialBoardState = Array(gridWidth*gridWidth).fill(null).map((_, index) => ({
+          tile: prePlacedTiles.find(t => t.position === index) || null,
+          feature: featureSquares[index] || null,
+          isValid: false // New state to track if the tile placement is valid
+        }));
+        // Update states with fetched data
+        console.log("Initial board state set:", initialBoardState);
+        setBoard(initialBoardState)
+        setTilesInPool(letterPool);
+        setValidWords(validWords);
+        // Save to local storage
+        localStorage.setItem('gameState', JSON.stringify({
+          date: today,
+          tilesInPool: letterPool,
+          board: initialBoardState
+        }));
+      }
+    };
+    console.log("use effect called, Fetching data...");
+    fetchData();
+  }, []);
 
 
-useEffect(() => {
-  fetchScrabbleSetup();
-}, []);
-*/
-  // Initialize the board with nulls and include features and pre-placed tiles
-  const initialBoardState = Array(gridWidth*gridWidth).fill(null).map((_, index) => ({
-    tile: prePlacedTiles.find(t => t.position === index) || null,
-    feature: featureSquares[index] || null,
-    isValid: false // New state to track if the tile placement is valid
-  }));
 
-  const [tilesInPool, setTilesInPool] = useState(letterPool);
-  const [board, setBoard] = useState(initialBoardState);
-  const [showModal, setShowModal] = useState(false);
-  const [modalContent, setModalContent] = useState("");
+  useEffect(() => {
+    const saveGameState = () => {
+      const localData = JSON.parse(localStorage.getItem('gameState'));
+      if (localData) {
+        const updatedGameState = {
+          ...localData, // spread existing data to keep other properties like date
+          board: board, // update board
+          tilesInPool: tilesInPool // update tiles in pool
+        };
+        localStorage.setItem('gameState', JSON.stringify(updatedGameState));
+        console.log("Game state saved:", updatedGameState);
+      }
+    };
+    if (board && tilesInPool) {
+      console.log("Saving game state");
+      saveGameState();
+    }
+  });
+  
 
+  const clearGameState = () => {
+    localStorage.removeItem('gameState'); // Clear the game state from local storage
+    console.log("Local storage cleared and game reset to initial state");
+  
+    // Reset the board and pool to initial configuration
+    const initialBoardState = Array(gridWidth * gridWidth).fill(null).map((_, index) => ({
+      tile: prePlacedTiles.find(t => t.position === index) || null,
+      feature: featureSquares[index] || null,
+      isValid: false
+    }));
+  
+    setBoard(initialBoardState);
+    setTilesInPool(letterPool);
+  };
+  
+    
+  // SCALING TILE SIZE BASED ON VIEWPORT
   useEffect(() => {
     const updateTileSize = () => {
       const size = Math.min(window.innerWidth / (gridWidth + 2), 60); // Example responsive calculation
@@ -98,7 +170,7 @@ useEffect(() => {
     return () => window.removeEventListener('resize', updateTileSize);
   }, []);
 
-
+  // HELPER FUNCTIONS
   const validateWords = (board, gridWidth) => {
     // Check horizontally and vertically if words are valid
     let isValid = true;
@@ -122,55 +194,6 @@ useEffect(() => {
 
     return newBoard;
   };
-
-  const moveTileToBoard = (tile, toIndex) => {
-    const newBoard = [...board];
-    const currentIndex = newBoard.findIndex(t => t?.tile?.id === tile.id);
-
-    if (currentIndex !== -1) {
-      newBoard[currentIndex].tile = null;
-    }
-
-    newBoard[toIndex].tile = { ...tile, isPrePlaced: false };
-    setBoard(newBoard);
-
-    if (currentIndex === -1) {
-      setTilesInPool(tilesInPool.filter(t => t.id !== tile.id));
-    }
-  };
-
-  const returnTileToArea = (index) => {
-    const tileData = board[index].tile;
-    if (tileData && !tileData.isPrePlaced) {
-      setTilesInPool([...tilesInPool, tileData]);
-      const newBoard = [...board];
-      newBoard[index].tile = null;
-      setBoard(newBoard);
-    }
-  };
-
-  const resetBoard = () => {
-    // Reset the board to include both pre-placed tiles and their original features
-    const resetBoardState = Array(gridWidth * gridWidth).fill(null).map((_, index) => ({
-      tile: prePlacedTiles.find(t => t.position === index) || null,
-      feature: featureSquares[index] || null,  // Ensure feature squares are maintained
-      isValid: false
-    }));
-    setBoard(validateWords(resetBoardState, gridWidth));
-    setTilesInPool([...letterPool]); // Reset tiles in pool to initial state
-  };
-  
-  // Function to return a tile to the pool
-  const returnTileToPool = (tileId) => {
-    const tileIndex = board.findIndex(square => square.tile?.id === tileId);
-    if (tileIndex !== -1) {
-      const tile = board[tileIndex].tile;
-      board[tileIndex].tile = null;  // Remove the tile from the board
-      setBoard([...board]);
-      setTilesInPool([...tilesInPool, tile]);  // Add tile back to the pool
-    }
-  };
-
   const handleCalculateScore = () => {
     const newBoard = validateWords(board, gridWidth);
     setBoard(newBoard);
@@ -189,15 +212,49 @@ useEffect(() => {
     }
     
   };
-
   const handleCloseModal = () => {
     setShowModal(false);
   };
 
-// Calculate the total width of the grid
-const paddingTotal = 10 * 2; // 10px padding on each side
-const gapTotal = (gridWidth - 1) * 5; // Total gap based on number of gaps
-const totalWidth = parseInt(tileSize) * gridWidth + gapTotal + paddingTotal;
+  // DND FUNCTIONS
+  const moveTileToBoard = (tile, toIndex) => {
+    const newBoard = [...board];
+    const currentIndex = newBoard.findIndex(t => t?.tile?.id === tile.id);
+
+    if (currentIndex !== -1) {
+      newBoard[currentIndex].tile = null;
+    }
+
+    newBoard[toIndex].tile = { ...tile, isPrePlaced: false };
+    setBoard(newBoard);
+
+    if (currentIndex === -1) {
+      setTilesInPool(tilesInPool.filter(t => t.id !== tile.id));
+    }
+  };
+  const returnTileToArea = (index) => {
+    const tileData = board[index].tile;
+    if (tileData && !tileData.isPrePlaced) {
+      setTilesInPool([...tilesInPool, tileData]);
+      const newBoard = [...board];
+      newBoard[index].tile = null;
+      setBoard(newBoard);
+    }
+  };
+  const returnTileToPool = (tileId) => {
+    const tileIndex = board.findIndex(square => square.tile?.id === tileId);
+    if (tileIndex !== -1) {
+      const tile = board[tileIndex].tile;
+      board[tileIndex].tile = null;  // Remove the tile from the board
+      setBoard([...board]);
+      setTilesInPool([...tilesInPool, tile]);  // Add tile back to the pool
+    }
+  };
+
+  // STYLE VARIABLES
+  const paddingTotal = 10 * 2; // 10px padding on each side
+  const gapTotal = (gridWidth - 1) * 5; // Total gap based on number of gaps
+  const totalWidth = parseInt(tileSize) * gridWidth + gapTotal + paddingTotal;
 
   return (
     <div style={{
@@ -224,8 +281,7 @@ const totalWidth = parseInt(tileSize) * gridWidth + gapTotal + paddingTotal;
       </div>
       
       <LetterPool 
-        tilesInPool={tilesInPool} 
-        setTilesInPool={setTilesInPool} 
+        tilesInPool={tilesInPool}
         tileSize={tileSize} 
         letterScores={letterScores} 
         returnTileToPool={returnTileToPool} 
@@ -248,6 +304,15 @@ const totalWidth = parseInt(tileSize) * gridWidth + gapTotal + paddingTotal;
             }}
           />
           <button onClick={handleCalculateScore}>Submit</button>
+          <button onClick={clearGameState} style={{
+        backgroundColor: '#f44336', // Soft red color
+        color: 'white',
+        border: 'none',
+        padding: '8px 16px',
+        fontSize: '14px',
+        borderRadius: '4px',
+        cursor: 'pointer'
+      }}>Reset Game</button>
           <div style={{width: '43px'}}></div>
       </div>
      
