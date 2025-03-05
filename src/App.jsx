@@ -3,6 +3,7 @@ import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
 import { TouchBackend } from 'react-dnd-touch-backend';
 import { isTouchDevice } from './utils/utils';
+import GameBoard from './GameBoard';
 import Board from './Board';
 import Navbar from './components/Navbar';
 import StatsModal from './components/modals/StatsModal';
@@ -46,8 +47,9 @@ function App() {
        overflow: 'hidden', // Hide any accidental overflow
        boxSizing: 'border-box', // Include padding in width calculation
       }}>
-       
-       <Board /> 
+       <GameBoard />
+       {/*<Board />*/}
+
        </div> 
       <StatsModal isVisible={showStatsModal} onClose={toggleStatsModal} />
       <TutorialModal isVisible={showTutorialModal} onClose={toggleTutorialModal} />

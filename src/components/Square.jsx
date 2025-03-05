@@ -1,7 +1,7 @@
 // components/Square.jsx
 import React from 'react';
 import { useDrop } from 'react-dnd';
-import Tile from './Tile';
+import Tile from '../Tile';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faTimes, faMinus, faArrowUp } from '@fortawesome/free-solid-svg-icons';
 

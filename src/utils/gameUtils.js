@@ -92,7 +92,7 @@ export const extractWordsAgain = (board, gridWidth) => {
   return words;
 };
 
-export const calculateScore = (board, words, letterScores, setModalContent, setShowModal) => {
+export const calculateScore = (board, words, letterScores, setModalContent) => {
   let score = 0;
   words.forEach(entry => {
       let wordScore = 0; // Initialize the score for the current word
@@ -141,7 +141,6 @@ export const calculateScore = (board, words, letterScores, setModalContent, setS
 
   // Update the UI with the final score
   setModalContent(`Your score is: ${score}`);
-  setShowModal(true);
 };
 
 
@@ -272,4 +271,71 @@ export const calculateScore = (board, words, letterScores, setModalContent, setS
      return allConnected;
   };
   
-  
+// Validates words placed on the board
+export const validateWords = (board, gridWidth, validWords) => {
+    let isValid = true;
+    const words = extractWords(board, gridWidth);
+    console.log('Words:', words);
+
+    words.forEach(word => {
+        if (!validWords.includes(word.toUpperCase())) {
+            console.log('Invalid word:', word);
+            isValid = false;
+        }
+    });
+
+    const newBoard = board.map(square => {
+        if (square.tile && words.includes(square.tile.letter)) {
+            return { ...square, isValid };
+        }
+        return square;
+    });
+
+    return newBoard;
+};
+
+// Handles score calculation
+export const handleCalculateScore = (board, setBoard, validWords, setModalContent, setShowModal) => {
+    const newBoard = validateWords(board, Math.sqrt(board.length), validWords);
+    setBoard(newBoard);
+
+    const words = extractWords(board, Math.sqrt(board.length));
+
+    if (!isConnected(board, Math.sqrt(board.length))) {
+        setModalContent("Please ensure all tiles are connected to an anchor tile.");
+        setShowModal(true);
+    } else if (!words.every(word => validWords.includes(word.toUpperCase()))) {
+        setModalContent("One or more words are not valid. Please check and try again.");
+        setShowModal(true);
+    } else {
+        calculateScore(board, extractWordsAgain(board, Math.sqrt(board.length)), letterScores, setModalContent, setShowModal);
+    }
+};
+
+// Moves a tile to the board
+export const moveTileToBoard = (tile, toIndex, board, setBoard, tilesInPool, setTilesInPool) => {
+    const newBoard = [...board];
+    const currentIndex = newBoard.findIndex(t => t?.tile?.id === tile.id);
+
+    if (currentIndex !== -1) {
+        newBoard[currentIndex].tile = null;
+    }
+
+    newBoard[toIndex].tile = { ...tile, isPrePlaced: false };
+    setBoard(newBoard);
+
+    if (currentIndex === -1) {
+        setTilesInPool(tilesInPool.filter(t => t.id !== tile.id));
+    }
+};
+
+// Returns a tile to the pool
+export const returnTileToPool = (tileId, board, setBoard, tilesInPool, setTilesInPool) => {
+    const tileIndex = board.findIndex(square => square.tile?.id === tileId);
+    if (tileIndex !== -1) {
+        const tile = board[tileIndex].tile;
+        board[tileIndex].tile = null;
+        setBoard([...board]);
+        setTilesInPool([...tilesInPool, tile]);
+    }
+};

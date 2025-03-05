@@ -9,7 +9,7 @@ const featureStyles = {
   doubleLetterScore: {
     backgroundColor: 'rgba(141, 134, 201, 0.3)',
     icon: <FontAwesomeIcon icon={faTimes} />, // Example icon for double score
-    iconText: 'DL'
+    iconText: 'x2'
   },
   subtractPoints: {
     backgroundColor: 'rgba(247, 198, 199, 0.3)',
@@ -19,17 +19,17 @@ const featureStyles = {
   tripleLetterScore: {
     backgroundColor: 'rgba(109, 89, 122, 0.3)',
     icon: <FontAwesomeIcon icon={faArrowUp} />, // Example icon for triple score
-    iconText: 'TL'
+    iconText: 'x3'
   },
   doubleWordScore: {
     backgroundColor: 'rgba(224, 122, 95, 0.3)',
     icon: <FontAwesomeIcon icon={faArrowUp} />, // Example icon for triple score
-    iconText: 'DW'
+    iconText: 'wx2'
   },
   tripleWordScore: {
     backgroundColor: 'rgba(184, 92, 92, 0.3)',
     icon: <FontAwesomeIcon icon={faArrowUp} />, // Example icon for triple score
-    iconText: 'TW'
+    iconText: 'wx3'
   }
 };
 
@@ -48,27 +48,29 @@ const Square = ({ onDrop, returnTile, tile, id, feature, letterScores, tileSize}
     returnTile(id);
   };
 
-  let backgroundColor = feature 
-    ? featureStyles[feature.type].backgroundColor // Use feature color
-    : '#DDE6EF'; // Default tile color
+  let backgroundColor = tile 
+  ? (feature && featureStyles[feature.type] 
+      ? featureStyles[feature.type].backgroundColor.replace('0.6', '1') // Fully opaque when occupied
+      : 'transparent') 
+  : (feature && featureStyles[feature.type] 
+      ? featureStyles[feature.type].backgroundColor 
+      : '#DDE6EF');
 
-  // If a tile is placed, make the background fully solid
-  if (tile && feature) {
-    backgroundColor = featureStyles[feature.type].backgroundColor.replace('0.3', '1'); // Remove transparency
-  } else if (tile) {
-    backgroundColor = 'transparent'; // Normal tile placement stays transparent
+  let icon = null; // No icon by default
+  let iconText = '';
+  
+  // Apply feature styles if the feature exists
+  if (feature && featureStyles[feature.type]) {
+    backgroundColor = featureStyles[feature.type].backgroundColor;
+    icon = featureStyles[feature.type].icon;
+    iconText = featureStyles[feature.type].iconText;
   }
 
-  let icon = feature ? featureStyles[feature.type].icon : null;
-  let iconText = feature ? featureStyles[feature.type].iconText : '';
-  
   if (isOver && canDrop) {
     backgroundColor = '#aaf'; // Active drag over and can drop
   } else if (isOver && !canDrop) {
     backgroundColor = '#f88'; // Active drag over and cannot drop
   }
-
-  const adjustedTileSize = parseInt(tileSize, 10);
 
   return (
     <div ref={drop} 
@@ -87,27 +89,14 @@ const Square = ({ onDrop, returnTile, tile, id, feature, letterScores, tileSize}
         borderRadius: '5px',
         userSelect: 'none',  // Prevent text selection
     }}>
-      {tile && (
-        <Tile 
-          key={tile.id} 
-          letter={tile.letter} 
-          id={tile.id} 
-          isDraggable={!tile.isPrePlaced} 
-          letterScores={letterScores} 
-          tileSize={tileSize} 
-          featureBackground={feature ? featureStyles[feature.type].backgroundColor : null} 
-          featureText={feature ? featureStyles[feature.type].iconText : null}
-        />
-      )}
+      {tile && <Tile key={tile.id} letter={tile.letter} id={tile.id} isDraggable={!tile.isPrePlaced} letterScores={letterScores} tileSize={tileSize} featureBackground={feature ? featureStyles[feature.type].backgroundColor : null} featureText={feature ? featureStyles[feature.type].iconText : null}/>} 
       {!tile && feature && (
         <span style={{
-          position: 'absolute',
-          bottom: '2px',
-          right: '2px',
-          fontSize: `${Math.max(8, adjustedTileSize / 4)}px`,
+          
+          fontSize: `25px`,
           color: 'rgba(0, 0, 0, 0.6)'
         }}>
-          {iconText}
+          {featureStyles[feature.type].iconText}
         </span>
       )}
     </div>
