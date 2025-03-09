@@ -1,12 +1,36 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
-
 import featureSquares from '../utils/featureSquares';
+
+// Function to load and cache word list in localStorage
+const loadWordList = async () => {
+    if (localStorage.getItem('wordList')) {
+        console.log('✅ Loaded words from localStorage');
+        return new Set(JSON.parse(localStorage.getItem('wordList')));
+    }
+
+    try {
+        console.log('📥 Fetching words from backend...');
+        const response = await axios.get('http://localhost:3000/api/words'); // Corrected URL
+
+        // API returns an array, no need for destructuring
+        const words = response.data;  
+
+        // Save to localStorage
+        localStorage.setItem('wordList', JSON.stringify(words));
+        console.log('✅ Saved words to localStorage');
+
+        return new Set(words); // Use Set for fast lookups
+    } catch (error) {
+        console.error('❌ Error loading word list:', error);
+        return new Set(); // Return empty Set if something goes wrong
+    }
+};
 
 const GameStateManager = (gridWidth) => {
     const [board, setBoard] = useState([]);
     const [tilesInPool, setTilesInPool] = useState([]);
-    const [validWords, setValidWords] = useState([]);
+    const [validWords, setValidWords] = useState(new Set());
     const [gameOver, setGameOver] = useState(false);
     const [attempts, setAttempts] = useState(3);
     const [incorrectWords, setIncorrectWords] = useState([]);
@@ -18,7 +42,16 @@ const GameStateManager = (gridWidth) => {
     // If date has changed, it clears stored game data and fetches a new puzzle
     useEffect(() => {
         // Fetch game data on mount
-        fetchGameData();
+        const initializeGame = async () => {
+            // Load valid words first
+            const wordsSet = await loadWordList();
+            setValidWords(wordsSet);
+
+            // Fetch game data after loading words
+            fetchGameData();
+        };
+
+        initializeGame();
     
         // Function to check if a new day has started
         const checkForNewDay = setInterval(() => {
@@ -57,7 +90,6 @@ const GameStateManager = (gridWidth) => {
             setTilesInPool(localData.tilesInPool);
             setBoard(localData.board);
             setStarterWord(localData.starterWord); // Retrieve starter word
-            setValidWords(localData.validWords);
             setGameOver(localData.gameOver);
             setTotalScore(localData.totalScore);
             setAttempts(localData.attempts);
@@ -66,13 +98,12 @@ const GameStateManager = (gridWidth) => {
         }
     
         try {        
-            const response = await axios.get(`https://scrabbleapi.onrender.com/scrabble-setup?date=${encodeURIComponent(localDateString)}`);
-            //const response = await axios.get(`http://localhost:3000/scrabble-setup?date=${encodeURIComponent(localDateString)}`);
-            const { letterPool, starterWordObj, validWords } = response.data;;
+            //const response = await axios.get(`https://scrabbleapi.onrender.com/scrabble-setup?date=${encodeURIComponent(localDateString)}`);
+            const response = await axios.get(`http://localhost:3000/scrabble-setup?date=${encodeURIComponent(localDateString)}`);
+            const { letterPool, starterWordObj, validWords } = response.data;
     
             // Set state with new puzzle data
             setTilesInPool(letterPool);
-            setValidWords(validWords);
 
             // Extract starter word (concatenating letters from `starterWordObj`)
             const starterWord = starterWordObj.map(t => t.letter).join("");
@@ -93,7 +124,6 @@ const GameStateManager = (gridWidth) => {
                 date: localDateString,  // Store in correct local format
                 tilesInPool: letterPool,
                 board: initialBoardState,
-                validWords,
                 starterWord,
                 gameOver,
                 totalScore,
@@ -109,18 +139,18 @@ const GameStateManager = (gridWidth) => {
     // Save game state to localStorage only when necessary
     useEffect(() => {
         if (board.length > 0 && tilesInPool.length >= 0) {
-            const clientDate = new Date().toISOString().split("T")[0];
-            saveGameState(clientDate, tilesInPool, board, validWords, starterWord, gameOver, totalScore, attempts, incorrectWords);
+            
+            saveGameState();
             console.log("🔥 Game state saved to localStorage.");
         }
-    }, [board, tilesInPool, validWords]);
+    }, [board, tilesInPool, attempts, incorrectWords, gameOver, totalScore]);
 
-    const saveGameState = (date, tiles, boardState, words, starterWord, gameOver, totalScore, attempts, incorrectWords) => {
+    const saveGameState = () => {
+        const clientDate = new Date().toISOString().split("T")[0];
         localStorage.setItem('gameState', JSON.stringify({
-            date,
-            tilesInPool: tiles,
-            board: boardState,
-            validWords: words,
+            date: clientDate,
+            tilesInPool,
+            board,
             starterWord,
             gameOver,
             totalScore,

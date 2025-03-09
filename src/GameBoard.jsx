@@ -57,74 +57,48 @@ const GameBoard = () => {
     return () => window.removeEventListener('resize', updateTileSize);
   }, []);
 
-  // HELPER FUNCTIONS
-  const validateWords = (board, gridWidth) => {
-    // Check horizontally and vertically if words are valid
-    let isValid = true;
-    const words = extractWords(board, gridWidth); // Assume this function extracts all words formed on the board
-    // Check each word if it's valid
-    words.forEach(word => {
-      if (!validWords.includes(word.toUpperCase())) {
-        isValid = false;
-      }
-    });
 
-    // Update the board with the validity state for each tile
-    const newBoard = board.map(square => {
-      if (square.tile && words.includes(square.tile.letter)) {
-        return { ...square, isValid: isValid };
-      }
-      return square;
-    });
-
-    return newBoard;
-  };
-  
   const handleCalculateScore = () => {
-    if (gameOver) return;
-  
-    const newBoard = validateWords(board, gridWidth);
-    setBoard(newBoard);
+    if (gameOver || validWords.size === 0) return; // Prevent scoring if game is over or no valid words
 
     const words = extractWords(board, gridWidth);
   
-    // Find first truly new incorrect word
-    const newIncorrectWord = words.find(word => !validWords.includes(word.toUpperCase()) && !incorrectWords.includes(word.toUpperCase()));
-
+    // 🚀 Find first truly new incorrect word
+    const newIncorrectWord = words.find(word => 
+      !validWords.has(word.toLowerCase()) && !incorrectWords.includes(word.toUpperCase())
+    );
     // Find first already guessed incorrect word
     const repeatIncorrectWord = words.find(word => incorrectWords.includes(word.toUpperCase()));
     
-    console.log("incorrectWords", incorrectWords);
-    // Check if all tiles are connected to an anchor tile
+    // 🚀 Check if all tiles are connected to an anchor tile
     if (!isConnected(board, gridWidth)) {
       showToast("Please ensure all tiles are connected to an anchor tile.");
       return;
+    }
 
-    // Handle new incorrect word (store & deduct attempt)
-    } else if (newIncorrectWord) { 
-        setIncorrectWords(prev => [...prev, newIncorrectWord.toUpperCase()]); // Store only ONE new incorrect word
-        setAttempts(prevAttempts => Math.max(prevAttempts - 1, 0)); // Deduct ONE attempt
+    // 🚀 Handle new incorrect word (store & deduct attempt)
+    if (newIncorrectWord) {
+      setIncorrectWords(prev => [...prev, newIncorrectWord.toUpperCase()]);
+      setAttempts(prevAttempts => Math.max(prevAttempts - 1, 0));
+      showToast(`"${newIncorrectWord}" is not valid. Try again.`);
 
-        showToast(`"${newIncorrectWord}" is not valid. Try again.`); // Show only ONE incorrect word
-
-        // Check if game over AFTER state updates
-        setTimeout(() => {
-            if (attempts - 1 <= 0) {
-                showToast("Game Over! No more attempts left.");
-            }
-        }, 0);
-
-        return;
+      setTimeout(() => {
+        if (attempts - 1 <= 0) {
+          showToast("Game Over! No more attempts left.");
+        }
+      }, 0);
+      return;
     }
      
-    // Handle repeat incorrect word (without deducting attempts)
-    else if (repeatIncorrectWord) {
+    // 🚀 Handle repeat incorrect word (without deducting attempts)
+    if (repeatIncorrectWord) {
       showToast(`"${repeatIncorrectWord}" has already been guessed and is incorrect. Try something else.`);
       return;
     }
 
+    console.log("🔠 Words:", words);
     // If all words are correct
-    if (words.every(word => validWords.includes(word.toUpperCase()))) {
+    if ((words.every(word => validWords.has(word.toLowerCase())))) {
         const { totalScore, scoreBreakdown } = calculateScore(board, extractWordsAgain(board, gridWidth), letterScores);
         setTotalScore(totalScore);
         setScoreBreakdown(scoreBreakdown);

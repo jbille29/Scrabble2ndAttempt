@@ -303,7 +303,7 @@ export const validateWords = (board, gridWidth, validWords) => {
         if (!validWords.includes(word.toUpperCase())) {
             console.log('Invalid word:', word);
             isValid = false;
-        }
+        } 
     });
 
     const newBoard = board.map(square => {
