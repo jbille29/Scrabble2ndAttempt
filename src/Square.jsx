@@ -12,22 +12,22 @@ const featureStyles = {
     iconText: 'DL'
   },
   subtractPoints: {
-    backgroundColor: 'rgba(247, 198, 199, 0.3)',
+    backgroundColor: 'rgba(247, 198, 199, 0.1)',
     icon: <FontAwesomeIcon icon={faMinus} />, // Example icon for subtract points
     iconText: ''
   },
   tripleLetterScore: {
-    backgroundColor: 'rgba(109, 89, 122, 0.3)',
+    backgroundColor: 'rgba(109, 89, 122, 0.1)',
     icon: <FontAwesomeIcon icon={faArrowUp} />, // Example icon for triple score
     iconText: 'TL'
   },
   doubleWordScore: {
-    backgroundColor: 'rgba(224, 122, 95, 0.3)',
+    backgroundColor: 'rgba(224, 122, 95, 0.1)',
     icon: <FontAwesomeIcon icon={faArrowUp} />, // Example icon for triple score
     iconText: 'DW'
   },
   tripleWordScore: {
-    backgroundColor: 'rgba(184, 92, 92, 0.3)',
+    backgroundColor: 'rgba(184, 92, 92, 0.1)',
     icon: <FontAwesomeIcon icon={faArrowUp} />, // Example icon for triple score
     iconText: 'TW'
   }
@@ -54,12 +54,11 @@ const Square = ({ onDrop, returnTile, tile, id, feature, letterScores, tileSize,
 
   // If a tile is placed, make the background fully solid
   if (tile && feature) {
-    backgroundColor = featureStyles[feature.type].backgroundColor.replace('0.3', '1'); // Remove transparency
+    backgroundColor = featureStyles[feature.type].backgroundColor.replace('0.1', '.3'); // Remove transparency
   } else if (tile) {
     backgroundColor = 'transparent'; // Normal tile placement stays transparent
   }
 
-  let icon = feature ? featureStyles[feature.type].icon : null;
   let iconText = feature ? featureStyles[feature.type].iconText : '';
   
   if (isOver && canDrop) {

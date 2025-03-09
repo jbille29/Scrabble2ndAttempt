@@ -98,9 +98,9 @@ const GameStateManager = (gridWidth) => {
         }
     
         try {        
-            //const response = await axios.get(`https://scrabbleapi.onrender.com/scrabble-setup?date=${encodeURIComponent(localDateString)}`);
-            const response = await axios.get(`http://localhost:3000/scrabble-setup?date=${encodeURIComponent(localDateString)}`);
-            const { letterPool, starterWordObj, validWords } = response.data;
+            const response = await axios.get(`https://scrabbleapi.onrender.com/scrabble-setup?date=${encodeURIComponent(localDateString)}`);
+            //const response = await axios.get(`http://localhost:3000/scrabble-setup?date=${encodeURIComponent(localDateString)}`);
+            const { letterPool, starterWordObj } = response.data;
     
             // Set state with new puzzle data
             setTilesInPool(letterPool);
@@ -110,12 +110,15 @@ const GameStateManager = (gridWidth) => {
             setStarterWord(starterWord);
             console.log("🔠 Starter word:", starterWord);
     
-            // Initialize board with pre-placed tiles
-            const initialBoardState = Array(gridWidth * gridWidth).fill(null).map((_, index) => ({
-                tile: starterWordObj.find(t => t.position === index) || null,
-                feature: featureSquares[index] || null,
-                isValid: false
-            }));
+           // ✅ Initialize board while **removing features from preplaced tiles**
+           const initialBoardState = Array(gridWidth * gridWidth).fill(null).map((_, index) => {
+                const preplacedTile = starterWordObj.find(t => t.position === index);
+                return {
+                    tile: preplacedTile || null,
+                    feature: preplacedTile ? null : featureSquares[index] || null,  // ✅ Remove feature if tile is preplaced
+                    isValid: false
+                };
+            });
     
             setBoard(initialBoardState);
     
@@ -147,10 +150,17 @@ const GameStateManager = (gridWidth) => {
 
     const saveGameState = () => {
         const clientDate = new Date().toISOString().split("T")[0];
+
+        // ✅ Ensure preplaced tiles have no features when saving
+        const cleanedBoard = board.map(square => ({
+            ...square,
+            feature: square.tile?.isPrePlaced ? null : square.feature
+        }));
+
         localStorage.setItem('gameState', JSON.stringify({
             date: clientDate,
             tilesInPool,
-            board,
+            board: cleanedBoard,
             starterWord,
             gameOver,
             totalScore,
