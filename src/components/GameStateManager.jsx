@@ -8,8 +8,10 @@ const GameStateManager = (gridWidth) => {
     const [tilesInPool, setTilesInPool] = useState([]);
     const [validWords, setValidWords] = useState([]);
     const [gameOver, setGameOver] = useState(false);
+    const [attempts, setAttempts] = useState(3);
+    const [incorrectWords, setIncorrectWords] = useState([]);
+    const [starterWord, setStarterWord] = useState(""); // New state for starter word
 
-    
     // Fetches game data when component mounts
     // Checks every minute to see if new day has started
     // If date has changed, it clears stored game data and fetches a new puzzle
@@ -53,23 +55,24 @@ const GameStateManager = (gridWidth) => {
             console.log("✅ Using saved local data.");
             setTilesInPool(localData.tilesInPool);
             setBoard(localData.board);
+            setStarterWord(localData.starterWord); // Retrieve starter word
             setValidWords(localData.validWords);
             setGameOver(false);
             return;
         }
     
-        try {
-            console.log("🔥 Fetching new game data...");
-            
-            // Fetch puzzle from server with proper local date
+        try {        
             const response = await axios.get(`https://scrabbleapi.onrender.com/scrabble-setup?date=${encodeURIComponent(localDateString)}`);
-            const { letterPool, starterWordObj, validWords } = response.data;
-    
-            console.log("📜 Received puzzle data:", response.data);
+            //const response = await axios.get(`http://localhost:3000/scrabble-setup?date=${encodeURIComponent(localDateString)}`);
+            const { letterPool, starterWordObj, validWords } = response.data;;
     
             // Set state with new puzzle data
             setTilesInPool(letterPool);
             setValidWords(validWords);
+
+            // Extract starter word (concatenating letters from `starterWordObj`)
+            const starterWord = starterWordObj.map(t => t.letter).join("");
+            setStarterWord(starterWord);
     
             // Initialize board with pre-placed tiles
             const initialBoardState = Array(gridWidth * gridWidth).fill(null).map((_, index) => ({
@@ -85,7 +88,8 @@ const GameStateManager = (gridWidth) => {
                 date: localDateString,  // Store in correct local format
                 tilesInPool: letterPool,
                 board: initialBoardState,
-                validWords
+                validWords,
+                starterWord
             }));
     
         } catch (error) {
@@ -95,9 +99,10 @@ const GameStateManager = (gridWidth) => {
 
     // Save game state to localStorage only when necessary
     useEffect(() => {
-        if (board.length > 0 && tilesInPool.length > 0) {
+        if (board.length > 0 && tilesInPool.length >= 0) {
             const clientDate = new Date().toISOString().split("T")[0];
             saveGameState(clientDate, tilesInPool, board, validWords);
+            console.log("🔥 Game state saved to localStorage.");
         }
     }, [board, tilesInPool, validWords]);
 
@@ -137,9 +142,12 @@ const GameStateManager = (gridWidth) => {
     return {
         board, setBoard,
         tilesInPool, setTilesInPool,
-        validWords, fetchGameData,
-        handleNextGame, clearGameState, handleSkipPuzzle,
-        gameOver, setGameOver
+        validWords,
+        handleNextGame, clearGameState,
+        gameOver, setGameOver,
+        attempts, setAttempts,
+        incorrectWords, setIncorrectWords,
+        starterWord 
     };
 };
 

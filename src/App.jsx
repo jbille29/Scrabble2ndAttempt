@@ -4,10 +4,10 @@ import { HTML5Backend } from 'react-dnd-html5-backend';
 import { TouchBackend } from 'react-dnd-touch-backend';
 import { isTouchDevice } from './utils/utils';
 import GameBoard from './GameBoard';
-import Board from './Board';
 import Navbar from './components/Navbar';
 import StatsModal from './components/modals/StatsModal';
 import TutorialModal from './components/modals/TutorialModal';
+
 
 function App() {
   const backend = isTouchDevice() ? TouchBackend : HTML5Backend;
@@ -48,7 +48,7 @@ function App() {
        boxSizing: 'border-box', // Include padding in width calculation
       }}>
        <GameBoard />
-       {/*<Board />*/}
+       {/*<TestApp />*/}
 
        </div> 
       <StatsModal isVisible={showStatsModal} onClose={toggleStatsModal} />

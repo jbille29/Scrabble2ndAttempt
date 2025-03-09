@@ -1,45 +1,49 @@
 import React, { useState, useEffect } from 'react';
-import { FaArrowRotateRight } from "react-icons/fa6";
-
 import LetterPool from './components/LetterPool';
 import GameStateManager from './components/GameStateManager';
+import ScoreBreakdownModal from './components/dev/ScoreBreakdownModal';
 import Square from './Square';
 import { extractWords, calculateScore, isConnected, extractWordsAgain } from './utils/gameUtils';
 import letterScores from './utils/letterScores';
-
-
+import ToastNotification from "./components/ToastNotification"; // Import Toast
 
 const GameBoard = () => {
   let gridWidth = 5; // Set grid width for 8x8 grid
   const [tileSize, setTileSize] = useState('50px');
-  const [counter, setCounter] = useState(0);
-  
   const [showModal, setShowModal] = useState(false);
   const [modalContent, setModalContent] = useState("");
-  const [showTutorial, setShowTutorial] = useState(false); // State to control the visibility of the tutorial modal
+  const [toastMessage, setToastMessage] = useState(""); // Toast state
+  const [scoreBreakdown, setScoreBreakdown] = useState([]);
+  const [showScoreModal, setShowScoreModal] = useState(false); // Controls the score breakdown modal
+  
 
   const {
     board, setBoard,
     tilesInPool, setTilesInPool,
-    validWords, fetchGameData, handleNextGame, clearGameState, handleSkipPuzzle,
-    gameOver, setGameOver
+    validWords, handleNextGame, clearGameState, 
+    gameOver, setGameOver,
+    attempts, setAttempts,
+    incorrectWords, setIncorrectWords,
+    starterWord
   } = GameStateManager(gridWidth);
+
+  const showToast = (message) => {
+    setToastMessage(message);
+    setTimeout(() => {
+      setToastMessage(""); // Clear toast after delay
+    }, 2500);
+  };
 
   useEffect(() => {
     // Check local storage for game statistics
     const gameStats = localStorage.getItem('gameStats');
     if (!gameStats) {
       // If no gameStats are found, it's the user's first visit
-      setShowTutorial(true);
+      //setShowTutorial(true);
       localStorage.setItem('gameStats', JSON.stringify({ visited: true }));
     }
-
     // Your existing useEffect logic here
   }, []);
-
-  const handleTutorialClose = () => {
-    setShowTutorial(false);
-  };
   
   
   // SCALING TILE SIZE BASED ON VIEWPORT
@@ -58,11 +62,9 @@ const GameBoard = () => {
     // Check horizontally and vertically if words are valid
     let isValid = true;
     const words = extractWords(board, gridWidth); // Assume this function extracts all words formed on the board
-    console.log('Words:', words);
     // Check each word if it's valid
     words.forEach(word => {
       if (!validWords.includes(word.toUpperCase())) {
-        console.log('Invalid word:', word);
         isValid = false;
       }
     });
@@ -77,28 +79,59 @@ const GameBoard = () => {
 
     return newBoard;
   };
+  
   const handleCalculateScore = () => {
     if (gameOver) return;
-
+  
     const newBoard = validateWords(board, gridWidth);
     setBoard(newBoard);
 
     const words = extractWords(board, gridWidth);
-    
-    if (!isConnected(board, gridWidth)) {
-      setModalContent("Please ensure all tiles are connected to an anchor tile.");
-      setShowModal(true);
-    } else if (!words.every(word => validWords.includes(word.toUpperCase()))) {
-      setModalContent("One or more words are not valid. Please check and try again.");
-      setShowModal(true);
-    } else {
+  
+    // Find first truly new incorrect word
+    const newIncorrectWord = words.find(word => !validWords.includes(word.toUpperCase()) && !incorrectWords.includes(word.toUpperCase()));
 
-      calculateScore(board, extractWordsAgain(board, gridWidth), letterScores, setModalContent);
-      setShowModal(true);
-      setGameOver(true);
-    }
+    // Find first already guessed incorrect word
+    const repeatIncorrectWord = words.find(word => incorrectWords.includes(word.toUpperCase()));
     
-  };
+    console.log("incorrectWords", incorrectWords);
+    // Check if all tiles are connected to an anchor tile
+    if (!isConnected(board, gridWidth)) {
+      showToast("Please ensure all tiles are connected to an anchor tile.");
+      return;
+
+    // Handle new incorrect word (store & deduct attempt)
+    } else if (newIncorrectWord) { 
+        setIncorrectWords(prev => [...prev, newIncorrectWord.toUpperCase()]); // Store only ONE new incorrect word
+        setAttempts(prevAttempts => Math.max(prevAttempts - 1, 0)); // Deduct ONE attempt
+
+        showToast(`"${newIncorrectWord}" is not valid. Try again.`); // Show only ONE incorrect word
+
+        // Check if game over AFTER state updates
+        setTimeout(() => {
+            if (attempts - 1 <= 0) {
+                showToast("Game Over! No more attempts left.");
+            }
+        }, 0);
+
+        return;
+    }
+     
+    // Handle repeat incorrect word (without deducting attempts)
+    else if (repeatIncorrectWord) {
+      showToast(`"${repeatIncorrectWord}" has already been guessed and is incorrect. Try something else.`);
+      return;
+    }
+
+    // If all words are correct
+    if (words.every(word => validWords.includes(word.toUpperCase()))) {
+        const { totalScore, scoreBreakdown } = calculateScore(board, extractWordsAgain(board, gridWidth), letterScores);
+        setScoreBreakdown(scoreBreakdown);
+        setShowScoreModal(true);
+        setGameOver(true);
+    }
+  }
+
   const handleCloseModal = () => {
     setShowModal(false);
   };
@@ -153,6 +186,20 @@ const GameBoard = () => {
       alignItems: "center",
       
     }}>
+      {toastMessage && <ToastNotification message={toastMessage} onClose={() => setToastMessage("")} />}
+      {/* 🔹 Instructions at the top */}
+      {starterWord && (
+        <div style={{
+          
+          marginBottom: "10px",
+          fontSize: "18px",
+          
+          textAlign: "center"
+        }}>
+          Build words off of <span style={{ color: "#4A90E2" }}>{starterWord}</span>
+        </div>
+      )}
+      
       <div className="board-container" style={{ 
           display: 'grid',
           gridTemplateColumns: `repeat(${gridWidth}, ${tileSize})`,
@@ -163,7 +210,16 @@ const GameBoard = () => {
           boxSizing: "border-box",
         }}>
         {board && board.map((square, index) => (
-          <Square key={index} id={index} onDrop={moveTileToBoard} returnTile={returnTileToArea} tile={square.tile} feature={square.feature} letterScores={letterScores} tileSize={tileSize}/>
+          <Square 
+            key={index} 
+            id={index} 
+            onDrop={moveTileToBoard} 
+            returnTile={returnTileToArea} 
+            tile={square.tile} 
+            feature={square.feature} 
+            letterScores={letterScores} 
+            tileSize={tileSize}
+            gameOver={gameOver}/>
         ))}
       </div>
       
@@ -172,45 +228,45 @@ const GameBoard = () => {
         tileSize={tileSize} 
         letterScores={letterScores} 
         returnTileToPool={returnTileToPool} 
+        gameOver={gameOver}
       />
-
       <div
+        className='button-container'
         style={{
           width: '100%',
           display: 'flex',
           justifyContent: 'space-between',
         }}>
-          <FaArrowRotateRight 
-            style={{
-                border: "none",
-                color: "#455a64",
-                cursor: "pointer",
-                fontSize: "24px",
-                padding: "5px 10px",
-                borderRadius: "5px"
-            }}
-          />
-          <button onClick={handleCalculateScore}>Submit</button>
-          <button onClick={clearGameState} style={{
-        backgroundColor: '#f44336', // Soft red color
-        color: 'white',
-        border: 'none',
-        padding: '8px 16px',
-        fontSize: '14px',
-        borderRadius: '4px',
-        cursor: 'pointer'
-      }}>Reset Game</button>
-      <button onClick={handleNextGame}>Next Game</button>
-          <div style={{width: '43px'}}></div>
+          <button onClick={handleCalculateScore}>
+            Submit
+          </button>      
+          
+            
+          <div style={{ display: "flex", alignItems: "center", gap: "5px" }}>
+            <span>Attempts:</span>
+            {Array.from({ length: attempts }).map((_, index) => (
+                <span
+                    key={index}
+                    style={{
+                        width: "12px",
+                        height: "12px",
+                        backgroundColor: attempts > 0 ? "#4A90E2" : "#D32F2F",
+                        borderRadius: "50%", // Makes it a circle
+                        display: "inline-block",
+                    }}
+                ></span>
+            ))}
+        </div>
       </div>
      
-      {showTutorial && (
-        <div>
-          <h2>Welcome to Your First Game!</h2>
-          <p>This is a quick tutorial to get you started.</p>
-          <button onClick={handleTutorialClose}>Close Tutorial</button>
-        </div>
+      {/*********  MODALS ***************/}
+      {showScoreModal && (
+        <ScoreBreakdownModal
+          scoreBreakdown={scoreBreakdown}
+          onClose={() => setShowScoreModal(false)}
+        />
       )}
+
       {showModal && (
         <div 
           style={{ 

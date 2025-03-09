@@ -33,7 +33,7 @@ const featureStyles = {
   }
 };
 
-const Square = ({ onDrop, returnTile, tile, id, feature, letterScores, tileSize}) => {
+const Square = ({ onDrop, returnTile, tile, id, feature, letterScores, tileSize, gameOver}) => {
   const [{ isOver, canDrop }, drop] = useDrop({
     accept: 'tile',
     drop: (item) => onDrop(item, id),
@@ -92,7 +92,7 @@ const Square = ({ onDrop, returnTile, tile, id, feature, letterScores, tileSize}
           key={tile.id} 
           letter={tile.letter} 
           id={tile.id} 
-          isDraggable={!tile.isPrePlaced} 
+          isDraggable={!gameOver && !tile.isPrePlaced}
           letterScores={letterScores} 
           tileSize={tileSize} 
           featureBackground={feature ? featureStyles[feature.type].backgroundColor : null} 

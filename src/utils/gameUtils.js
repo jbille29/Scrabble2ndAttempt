@@ -92,56 +92,78 @@ export const extractWordsAgain = (board, gridWidth) => {
   return words;
 };
 
-export const calculateScore = (board, words, letterScores, setModalContent) => {
-  let score = 0;
-  words.forEach(entry => {
-      let wordScore = 0; // Initialize the score for the current word
-      let wordMultiplier = 1; // Start with no multiplier
-
+export const calculateScore = (board, words, letterScores) => {
+    let totalScore = 0;
+    let scoreBreakdown = [];
+  
+    words.forEach(entry => {
+      let baseWordScore = 0; // Step 1: Base letter score
+        let finalWordScore = 0; // Step 2: Apply letter multipliers
+      let wordMultipliers = []; // Step 3: Collect multiple word multipliers
+      let appliedFeatures = [];
+  
+      // Calculate the base score
       entry.indices.forEach(index => {
-          const tile = board[index].tile;
-          const feature = board[index].feature;
-          const letterScore = letterScores[tile.letter.toUpperCase()];
-          let tileScore = letterScore; // Start with base letter score
-
-          // Apply feature effects to the tileScore
-          if (feature) {
-              switch (feature.type) {
-                  case 'doubleLetterScore':
-                      tileScore *= 2; // Double the letter score
-                      break;
-                  case 'tripleLetterScore':
-                      tileScore *= 3; // Triple the letter score
-                      break;
-                  case 'doubleWordScore':
-                      wordMultiplier *= 2; // Double the entire word score later
-                      break;
-                  case 'tripleWordScore':
-                      wordMultiplier *= 3; // Triple the entire word score later
-                      break;
-                  case 'subtractPoints':
-                      tileScore -= letterScore * 2; // Subtract the letter score (or another rule)
-                      break;
-                  default:
-                      // No additional actions needed for other types
-                      break;
-              }
+        const tile = board[index].tile;
+        const letterScore = letterScores[tile.letter.toUpperCase()];
+        let tileScore = letterScore;
+  
+        baseWordScore += tileScore; // Add letter score to total base score
+      });
+      // Calculate score with features 
+      entry.indices.forEach(index => {
+        const tile = board[index].tile;
+        const feature = board[index].feature;
+        const letterScore = letterScores[tile.letter.toUpperCase()];
+        let tileScore = letterScore;
+        
+        if (feature) {
+          switch (feature.type) {
+            case 'doubleLetterScore':
+              tileScore *= 2;
+              appliedFeatures.push({ name: "Double Letter", value: letterScore });
+              break;
+            case 'tripleLetterScore':
+              tileScore *= 3;
+              appliedFeatures.push({ name: "Triple Letter", value: letterScore * 2 });
+              break;
+            case 'doubleWordScore':
+              wordMultipliers.push(2); // Collect word multipliers separately
+              appliedFeatures.push({ name: "Double Word", value: 0 });
+              break;
+            case 'tripleWordScore':
+              wordMultipliers.push(3);
+              appliedFeatures.push({ name: "Triple Word", value: 0 });
+              break;
+            default:
+              break;
           }
-
-          // Add the tileScore to the wordScore
-          wordScore += tileScore;
-      }); // iterating through each letter
-      console.log(`Word ${entry.word} has a score of ${wordScore}`);
-      // After processing all letters, apply any word multipliers
-      wordScore *= wordMultiplier;
-      console.log(`Word ${entry.word} has a score of ${wordScore} after multiplier`);
-      // Add the wordScore to the total score for the game
-      score += wordScore;
-  }); // iterating through each word
-
-  // Update the UI with the final score
-  setModalContent(`Your score is: ${score}`);
-};
+        }
+  
+        finalWordScore += tileScore; // Add letter score to total base score
+      });
+  
+      // Step 3: Apply **all** word multipliers one by one
+      wordMultipliers.forEach(multiplier => {
+        finalWordScore *= multiplier;
+      });
+  
+      totalScore += finalWordScore; // Step 4: Add to total score
+      
+      console.log(`Word: ${entry.word}, Base Score: ${baseWordScore}, Final Score: ${totalScore}`);
+      scoreBreakdown.push({
+        word: entry.word,
+        baseScore: baseWordScore,
+        features: appliedFeatures,
+        finalScore: finalWordScore,
+      });
+    });
+    
+    console.log("\n🏆 FINAL TOTAL SCORE:", totalScore);
+    console.log("📝 SCORE BREAKDOWN:", scoreBreakdown);
+    return { totalScore, scoreBreakdown };
+  };
+  
 
 
 /*

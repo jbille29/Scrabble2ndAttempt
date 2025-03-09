@@ -3,7 +3,7 @@ import React from 'react';
 import Tile from '../Tile';
 import { useDrop } from 'react-dnd';
 
-const LetterPool = ({ tilesInPool, tileSize, letterScores, returnTileToPool }) => {
+const LetterPool = ({ tilesInPool, tileSize, letterScores, returnTileToPool, gameOver }) => {
   const [, drop] = useDrop({
     accept: 'tile',
     drop: (item) => {
@@ -26,6 +26,7 @@ const LetterPool = ({ tilesInPool, tileSize, letterScores, returnTileToPool }) =
        
         height: 'auto', // Allows height to grow
         maxHeight: '300px', // Sets maximum height
+        minHeight: `${parseInt(tileSize, 10) + 5}px`, // Sets minimum height
         width: "100%", // Sets minimum width
         overflow: 'hidden', // Allows scrolling inside the container if content overflows
         boxShadow: 'inset 0 1px 3px rgba(0, 0, 0, 0.25)', // Inset shadow
@@ -49,7 +50,7 @@ const LetterPool = ({ tilesInPool, tileSize, letterScores, returnTileToPool }) =
             key={tile.id}
             letter={tile.letter}
             id={tile.id}
-            isDraggable={!tile.isPrePlaced}
+            isDraggable={!gameOver && !tile.isPrePlaced}
             letterScores={letterScores}
             tileSize={tileSize}
             featureBackground={null}
