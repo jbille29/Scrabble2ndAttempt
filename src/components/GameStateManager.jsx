@@ -10,7 +10,8 @@ const GameStateManager = (gridWidth) => {
     const [gameOver, setGameOver] = useState(false);
     const [attempts, setAttempts] = useState(3);
     const [incorrectWords, setIncorrectWords] = useState([]);
-    const [starterWord, setStarterWord] = useState(""); // New state for starter word
+    const [starterWord, setStarterWord] = useState(""); 
+    const [totalScore, setTotalScore] = useState(0); 
 
     // Fetches game data when component mounts
     // Checks every minute to see if new day has started
@@ -57,7 +58,10 @@ const GameStateManager = (gridWidth) => {
             setBoard(localData.board);
             setStarterWord(localData.starterWord); // Retrieve starter word
             setValidWords(localData.validWords);
-            setGameOver(false);
+            setGameOver(localData.gameOver);
+            setTotalScore(localData.totalScore);
+            setAttempts(localData.attempts);
+            setIncorrectWords(localData.incorrectWords);
             return;
         }
     
@@ -73,6 +77,7 @@ const GameStateManager = (gridWidth) => {
             // Extract starter word (concatenating letters from `starterWordObj`)
             const starterWord = starterWordObj.map(t => t.letter).join("");
             setStarterWord(starterWord);
+            console.log("🔠 Starter word:", starterWord);
     
             // Initialize board with pre-placed tiles
             const initialBoardState = Array(gridWidth * gridWidth).fill(null).map((_, index) => ({
@@ -89,7 +94,11 @@ const GameStateManager = (gridWidth) => {
                 tilesInPool: letterPool,
                 board: initialBoardState,
                 validWords,
-                starterWord
+                starterWord,
+                gameOver,
+                totalScore,
+                attempts,
+                incorrectWords
             }));
     
         } catch (error) {
@@ -101,53 +110,34 @@ const GameStateManager = (gridWidth) => {
     useEffect(() => {
         if (board.length > 0 && tilesInPool.length >= 0) {
             const clientDate = new Date().toISOString().split("T")[0];
-            saveGameState(clientDate, tilesInPool, board, validWords);
+            saveGameState(clientDate, tilesInPool, board, validWords, starterWord, gameOver, totalScore, attempts, incorrectWords);
             console.log("🔥 Game state saved to localStorage.");
         }
     }, [board, tilesInPool, validWords]);
 
-    useEffect(() => {
-        console.log("Checking for game over...", gameOver)
-    }, [gameOver]);
-
-    const saveGameState = (date, tiles, boardState, words) => {
+    const saveGameState = (date, tiles, boardState, words, starterWord, gameOver, totalScore, attempts, incorrectWords) => {
         localStorage.setItem('gameState', JSON.stringify({
             date,
             tilesInPool: tiles,
             board: boardState,
-            validWords: words
+            validWords: words,
+            starterWord,
+            gameOver,
+            totalScore,
+            attempts,
+            incorrectWords
         }));
         console.log("💾 Game state saved.");
     };    
-
-    const handleNextGame = () => {
-        console.log("Fetching next game...");
-        localStorage.removeItem('gameState');
-        fetchGameData();
-    };
-
-    const handleSkipPuzzle = async () => {
-        console.log("Skipping to the next puzzle...");
-        localStorage.removeItem('gameState');
-        await fetchGameData();
-    };
-
-    const clearGameState = () => {
-        localStorage.removeItem('gameState');
-        setBoard([]);
-        setTilesInPool([]);
-        setGameOver(false);
-    };
 
     return {
         board, setBoard,
         tilesInPool, setTilesInPool,
         validWords,
-        handleNextGame, clearGameState,
         gameOver, setGameOver,
         attempts, setAttempts,
         incorrectWords, setIncorrectWords,
-        starterWord 
+        starterWord, totalScore, setTotalScore
     };
 };
 

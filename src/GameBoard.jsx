@@ -20,11 +20,11 @@ const GameBoard = () => {
   const {
     board, setBoard,
     tilesInPool, setTilesInPool,
-    validWords, handleNextGame, clearGameState, 
+    validWords, 
     gameOver, setGameOver,
     attempts, setAttempts,
     incorrectWords, setIncorrectWords,
-    starterWord
+    starterWord, totalScore, setTotalScore
   } = GameStateManager(gridWidth);
 
   const showToast = (message) => {
@@ -126,6 +126,7 @@ const GameBoard = () => {
     // If all words are correct
     if (words.every(word => validWords.includes(word.toUpperCase()))) {
         const { totalScore, scoreBreakdown } = calculateScore(board, extractWordsAgain(board, gridWidth), letterScores);
+        setTotalScore(totalScore);
         setScoreBreakdown(scoreBreakdown);
         setShowScoreModal(true);
         setGameOver(true);
@@ -190,13 +191,19 @@ const GameBoard = () => {
       {/* 🔹 Instructions at the top */}
       {starterWord && (
         <div style={{
-          
           marginBottom: "10px",
           fontSize: "18px",
-          
           textAlign: "center"
         }}>
-          Build words off of <span style={{ color: "#4A90E2" }}>{starterWord}</span>
+          {!gameOver ? (
+            <>
+              Build words off of <span style={{ color: "#4A90E2" }}>{starterWord}</span>
+            </>
+          ) : (
+            <>
+              Your score: <span style={{ color: "#4A90E2" }}>{totalScore}</span>
+            </>
+          )}
         </div>
       )}
       
