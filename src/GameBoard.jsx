@@ -170,13 +170,13 @@ const GameBoard = () => {
           textAlign: "center"
         }}>
           {!gameOver ? (
-            <>
-              Build words off of <span style={{ color: "#4A90E2" }}>{starterWord}</span>
-            </>
+            <span>
+              Build words off of <span style={{ fontFamily:"Lexend Deca", color: "#4A90E2" }}>{starterWord}</span>
+            </span>
           ) : (
-            <>
+            <span>
               Your score: <span style={{ color: "#4A90E2" }}>{totalScore}</span>
-            </>
+            </span>
           )}
         </div>
       )}

@@ -102,9 +102,10 @@ const Square = ({ onDrop, returnTile, tile, id, feature, letterScores, tileSize,
         <span style={{
           position: 'absolute',
           bottom: '2px',
-          right: '2px',
+          right: '4px',
           fontSize: `${Math.max(8, adjustedTileSize / 4)}px`,
-          color: 'rgba(0, 0, 0, 0.6)'
+          color: 'rgba(0, 0, 0, 0.6)',
+          fontFamily: 'Nunito, sans-serif',
         }}>
           {iconText}
         </span>

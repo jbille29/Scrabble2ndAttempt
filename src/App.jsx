@@ -8,7 +8,6 @@ import Navbar from './components/Navbar';
 import StatsModal from './components/modals/StatsModal';
 import TutorialModal from './components/modals/TutorialModal';
 
-
 function App() {
   const backend = isTouchDevice() ? TouchBackend : HTML5Backend;
   const [isNewDay, setIsNewDay] = useState(false);

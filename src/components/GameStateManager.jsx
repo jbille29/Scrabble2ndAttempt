@@ -41,60 +41,77 @@ const GameStateManager = (gridWidth) => {
     // Checks every minute to see if new day has started
     // If date has changed, it clears stored game data and fetches a new puzzle
     useEffect(() => {
-        // Fetch game data on mount
         const initializeGame = async () => {
             // Load valid words first
             const wordsSet = await loadWordList();
             setValidWords(wordsSet);
-
+    
             // Fetch game data after loading words
             fetchGameData();
         };
-
+    
         initializeGame();
     
-        // Function to check if a new day has started
-        const checkForNewDay = setInterval(() => {
+        // ✅ Function to check if a new day has started
+        const checkForNewDay = setInterval(async () => {
             const now = new Date();
-            const formattedCurrentDate = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+            const formattedCurrentDate = now.toISOString().split("T")[0]; // Ensure consistent format
     
-            const storedDate = JSON.parse(localStorage.getItem('gameState'))?.date;
+            // ✅ Retrieve stored game data
+            const storedGameState = JSON.parse(localStorage.getItem('gameState'));
+            const storedDate = storedGameState?.date;
     
-            console.log("📅 Checking for new day...", formattedCurrentDate, storedDate);
+            console.log("📅 Checking for new day:", formattedCurrentDate, storedDate);
     
-            if (formattedCurrentDate !== storedDate) {
-                console.log("🔥 Midnight reached! Refreshing game data.");
-                localStorage.removeItem('gameState');
-                fetchGameData();
+            // ✅ Only reset if the stored date is different from today's date
+            if (storedDate && storedDate !== formattedCurrentDate) {
+                console.log("🔥 New day detected! Checking for new puzzle before resetting...");
+    
+                try {
+                    const response = await axios.get(`http://localhost:3000/scrabble-setup?date=${encodeURIComponent(formattedCurrentDate)}`);
+                    if (response.data) {
+                        console.log("✅ New puzzle available. Refreshing game data.");
+                        localStorage.removeItem('gameState');
+                        fetchGameData();
+                    } else {
+                        console.log("❌ No new puzzle found. Keeping existing game state.");
+                    }
+                } catch (error) {
+                    console.error("❌ Error checking for new puzzle:", error);
+                }
             }
-        }, 60000); // Runs every 15 seconds
+        }, 10000)// Runs every 60 seconds
     
-        // Cleanup interval on unmount
         return () => clearInterval(checkForNewDay);
     }, []);
+    
     
 
     const fetchGameData = async () => {
         // Get local date in YYYY-MM-DD format
         const clientDate = new Date();
-        const localDateString = `${clientDate.getFullYear()}-${String(clientDate.getMonth() + 1).padStart(2, '0')}-${String(clientDate.getDate()).padStart(2, '0')}`;
+        const localDateString = clientDate.toISOString().split("T")[0]; // Standardized format
     
         console.log("📅 Client is sending request for local date:", localDateString);
     
         // Retrieve game state from localStorage
         const localData = JSON.parse(localStorage.getItem('gameState'));
     
-        // If the stored puzzle is from today, use it instead of refetching
-        if (localData && localData.date === localDateString) {
-            console.log("✅ Using saved local data.");
-            setTilesInPool(localData.tilesInPool);
-            setBoard(localData.board);
-            setStarterWord(localData.starterWord); // Retrieve starter word
-            setGameOver(localData.gameOver);
-            setTotalScore(localData.totalScore);
-            setAttempts(localData.attempts);
-            setIncorrectWords(localData.incorrectWords);
-            return;
+        // ✅ Ensure we compare the stored date in the same format
+        if (localData) {
+            const storedDate = new Date(localData.date).toISOString().split("T")[0]; // Ensure same format
+    
+            if (storedDate === localDateString) {
+                console.log("✅ Using saved local data.");
+                setTilesInPool(localData.tilesInPool);
+                setBoard(localData.board);
+                setStarterWord(localData.starterWord);
+                setGameOver(localData.gameOver);
+                setTotalScore(localData.totalScore);
+                setAttempts(localData.attempts);
+                setIncorrectWords(localData.incorrectWords);
+                return;
+            }
         }
     
         try {        
