@@ -1,19 +1,65 @@
-import React from 'react';
+import React, { useState } from "react";
+import { motion } from "framer-motion";
+import "./TutorialModal.css";
+
+// Sample tutorial images (replace with actual paths)
+import step1 from "../../assets/tutorial-step1.jpg";
+import step2 from "../../assets/tutorial-step2.jpg";
+import step3 from "../../assets/tutorial-step3.jpg";
+
+const tutorialSteps = [
+  {
+    title: "How to Play",
+    text: "Find words using the given letters. Longer words score more points!",
+    image: step1,
+  },
+  {
+    title: "Scoring",
+    text: "Each word has a base score. Bonus multipliers apply for special tiles!",
+    image: step2,
+  },
+  {
+    title: "Daily Challenge",
+    text: "You have one puzzle per day. Try to get the highest score!",
+    image: step3,
+  },
+];
 
 const TutorialModal = ({ isVisible, onClose }) => {
+  const [stepIndex, setStepIndex] = useState(0);
+
   if (!isVisible) return null;
 
+  const nextStep = () => {
+    if (stepIndex < tutorialSteps.length - 1) {
+      setStepIndex(stepIndex + 1);
+    } else {
+      onClose(); // Close when finished
+    }
+  };
+
   return (
-    <div style={{
-      position: 'fixed', top: '50%', left: '50%', transform: 'translate(-50%, -50%)',
-      backgroundColor: 'white', padding: '20px', zIndex: 1000,
-      borderRadius: '8px', boxShadow: '0 6px 12px rgba(0,0,0,0.15)',
-      display: 'flex', flexDirection: 'column', alignItems: 'center'
-    }}>
-      <p>Welcome to the new game of the day!</p>
-      <button onClick={onClose} style={{ padding: '10px 20px', marginTop: '10px' }}>
-        Start Playing
-      </button>
+    <div className="tutorial-overlay">
+      <motion.div
+        initial={{ opacity: 0, scale: 0.9 }}
+        animate={{ opacity: 1, scale: 1 }}
+        exit={{ opacity: 0, scale: 0.9 }}
+        className="tutorial-container"
+      >
+        <h2 className="tutorial-title">{tutorialSteps[stepIndex].title}</h2>
+
+        <p className="tutorial-text">{tutorialSteps[stepIndex].text}</p>
+
+        <img
+          src={tutorialSteps[stepIndex].image}
+          alt={`Step ${stepIndex + 1}`}
+          className="tutorial-image"
+        />
+
+        <button className="tutorial-button" onClick={nextStep}>
+          {stepIndex === tutorialSteps.length - 1 ? "Got It!" : "Next"}
+        </button>
+      </motion.div>
     </div>
   );
 };

@@ -7,7 +7,7 @@ import { faTimes, faMinus, faArrowUp } from '@fortawesome/free-solid-svg-icons';
 
 const featureStyles = {
   doubleLetterScore: {
-    backgroundColor: 'rgba(141, 134, 201, 0.3)',
+    backgroundColor: 'var(--double-letter)',
     icon: <FontAwesomeIcon icon={faTimes} />, // Example icon for double score
     iconText: 'DL'
   },
@@ -17,17 +17,17 @@ const featureStyles = {
     iconText: ''
   },
   tripleLetterScore: {
-    backgroundColor: 'rgba(109, 89, 122, 0.1)',
+    backgroundColor: 'var(--triple-letter)',
     icon: <FontAwesomeIcon icon={faArrowUp} />, // Example icon for triple score
     iconText: 'TL'
   },
   doubleWordScore: {
-    backgroundColor: 'rgba(224, 122, 95, 0.1)',
+    backgroundColor: 'var(--double-word)',
     icon: <FontAwesomeIcon icon={faArrowUp} />, // Example icon for triple score
     iconText: 'DW'
   },
   tripleWordScore: {
-    backgroundColor: 'rgba(184, 92, 92, 0.1)',
+    backgroundColor: 'var(--triple-word)',
     icon: <FontAwesomeIcon icon={faArrowUp} />, // Example icon for triple score
     iconText: 'TW'
   }
@@ -50,11 +50,11 @@ const Square = ({ onDrop, returnTile, tile, id, feature, letterScores, tileSize,
 
   let backgroundColor = feature 
     ? featureStyles[feature.type].backgroundColor // Use feature color
-    : '#DDE6EF'; // Default tile color
+    : 'var(--empty-tile-blue)'; // Default tile color
 
   // If a tile is placed, make the background fully solid
   if (tile && feature) {
-    backgroundColor = featureStyles[feature.type].backgroundColor.replace('0.1', '.3'); // Remove transparency
+    backgroundColor = featureStyles[feature.type].backgroundColor; // Remove transparency
   } else if (tile) {
     backgroundColor = 'transparent'; // Normal tile placement stays transparent
   }
@@ -62,9 +62,9 @@ const Square = ({ onDrop, returnTile, tile, id, feature, letterScores, tileSize,
   let iconText = feature ? featureStyles[feature.type].iconText : '';
   
   if (isOver && canDrop) {
-    backgroundColor = '#aaf'; // Active drag over and can drop
+    backgroundColor = 'var(--secondary-blue)';
   } else if (isOver && !canDrop) {
-    backgroundColor = '#f88'; // Active drag over and cannot drop
+    backgroundColor = 'var(--attempt-circle-active)'; // Drag over & can't drop
   }
 
   const adjustedTileSize = parseInt(tileSize, 10);

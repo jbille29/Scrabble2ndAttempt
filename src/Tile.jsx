@@ -33,9 +33,7 @@ const Tile = ({ letter, id, isDraggable, letterScores, tileSize, featureBackgrou
         padding: `${paddingSize}px`,
         margin: '0',
         border: '1px solid #ccc',
-        backgroundColor: featureBackground 
-        ? 'transparent' 
-        : !isDraggable 
+        backgroundColor: !isDraggable 
           ? '#d9b0a7'  // The girls’ pick for pre-placed tiles 🍈🍈
           : '#f2d1c9', // Default tile background
       

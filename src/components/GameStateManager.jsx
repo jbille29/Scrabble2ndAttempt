@@ -32,26 +32,32 @@ const GameStateManager = (gridWidth) => {
     const [tilesInPool, setTilesInPool] = useState([]);
     const [validWords, setValidWords] = useState(new Set());
     const [gameOver, setGameOver] = useState(false);
-    const [attempts, setAttempts] = useState(3);
+    const [attempts, setAttempts] = useState(2);
     const [incorrectWords, setIncorrectWords] = useState([]);
     const [starterWord, setStarterWord] = useState(""); 
+    const [starterWordObj, setStaterWordObj] = useState([]);
     const [totalScore, setTotalScore] = useState(0); 
-
+    const [isLoading, setIsLoading] = useState(true);
+    const [maxScore, setMaxScore] = useState(0);
+    
     // Fetches game data when component mounts
     // Checks every minute to see if new day has started
     // If date has changed, it clears stored game data and fetches a new puzzle
     useEffect(() => {
         const initializeGame = async () => {
+            setIsLoading(true);
             // Load valid words first
             const wordsSet = await loadWordList();
             setValidWords(wordsSet);
     
             // Fetch game data after loading words
-            fetchGameData();
+            await fetchGameData();
+            setIsLoading(false);
         };
     
         initializeGame();
-    
+    }, []);
+    useEffect(() => {
         // ✅ Function to check if a new day has started
         const checkForNewDay = setInterval(async () => {
             const now = new Date();
@@ -68,7 +74,8 @@ const GameStateManager = (gridWidth) => {
                 console.log("🔥 New day detected! Checking for new puzzle before resetting...");
     
                 try {
-                    const response = await axios.get(`http://localhost:3000/scrabble-setup?date=${encodeURIComponent(formattedCurrentDate)}`);
+                    //const response = await axios.get(`http://localhost:3000/scrabble-setup?date=${encodeURIComponent(formattedCurrentDate)}`);
+                    const response = await axios.get(`https://scrabbleapi.onrender.com/scrabble-setup?date=${encodeURIComponent(formattedCurrentDate)}`);
                     if (response.data) {
                         console.log("✅ New puzzle available. Refreshing game data.");
                         localStorage.removeItem('gameState');
@@ -88,11 +95,12 @@ const GameStateManager = (gridWidth) => {
     
 
     const fetchGameData = async () => {
+        setIsLoading(true);
         // Get local date in YYYY-MM-DD format
         const clientDate = new Date();
         const localDateString = clientDate.toISOString().split("T")[0]; // Standardized format
     
-        console.log("📅 Client is sending request for local date:", localDateString);
+        console.time("⏳ API Response Time");
     
         // Retrieve game state from localStorage
         const localData = JSON.parse(localStorage.getItem('gameState'));
@@ -106,10 +114,13 @@ const GameStateManager = (gridWidth) => {
                 setTilesInPool(localData.tilesInPool);
                 setBoard(localData.board);
                 setStarterWord(localData.starterWord);
+                setStaterWordObj(localData.starterWordObj);
                 setGameOver(localData.gameOver);
                 setTotalScore(localData.totalScore);
                 setAttempts(localData.attempts);
                 setIncorrectWords(localData.incorrectWords);
+                setIsLoading(false);
+                setMaxScore(localData.maxScore);
                 return;
             }
         }
@@ -117,15 +128,18 @@ const GameStateManager = (gridWidth) => {
         try {        
             const response = await axios.get(`https://scrabbleapi.onrender.com/scrabble-setup?date=${encodeURIComponent(localDateString)}`);
             //const response = await axios.get(`http://localhost:3000/scrabble-setup?date=${encodeURIComponent(localDateString)}`);
-            const { letterPool, starterWordObj } = response.data;
+            console.timeEnd("⏳ API Response Time");
+            const { letterPool, starterWordObj, maxScore } = response.data;
     
             // Set state with new puzzle data
             setTilesInPool(letterPool);
+            setMaxScore(maxScore);
 
             // Extract starter word (concatenating letters from `starterWordObj`)
             const starterWord = starterWordObj.map(t => t.letter).join("");
             setStarterWord(starterWord);
-            console.log("🔠 Starter word:", starterWord);
+            setStaterWordObj(starterWordObj);
+            console.log("🔠 Starter word:", starterWordObj);
     
            // ✅ Initialize board while **removing features from preplaced tiles**
            const initialBoardState = Array(gridWidth * gridWidth).fill(null).map((_, index) => {
@@ -145,16 +159,51 @@ const GameStateManager = (gridWidth) => {
                 tilesInPool: letterPool,
                 board: initialBoardState,
                 starterWord,
+                starterWordObj,
                 gameOver,
                 totalScore,
                 attempts,
-                incorrectWords
+                incorrectWords,
+                maxScore
             }));
     
         } catch (error) {
             console.error("❌ Error fetching game data:", error);
+        } finally {
+            setIsLoading(false);
         }
     };
+
+    const updateStats = (date, score, maxScore, lettersLeft) => {
+        // ✅ Ensure `stats` has a valid structure
+        let stats = JSON.parse(localStorage.getItem('gameStats')) || {}; 
+    
+        // ✅ Ensure `history` array exists
+        if (!stats.history) {
+            stats = {
+                gamesPlayed: 0,
+                history: []
+            };
+        }
+    
+        // ✅ Check if the game for this date already exists in history
+        const existingGameIndex = stats.history.findIndex(entry => entry.date === date);
+    
+        if (existingGameIndex !== -1) {
+            // ✅ Update existing entry for the same date
+            stats.history[existingGameIndex] = { date, score, maxScore, lettersLeft };
+        } else {
+            // ✅ Add new entry
+            stats.history.push({ date, score, maxScore, lettersLeft });
+            stats.gamesPlayed += 1;
+        }
+    
+        // ✅ Save updated stats
+        localStorage.setItem('gameStats', JSON.stringify(stats));
+        console.log("📊 Updated stats:", stats);
+    };
+    
+    
 
     // Save game state to localStorage only when necessary
     useEffect(() => {
@@ -185,6 +234,7 @@ const GameStateManager = (gridWidth) => {
             incorrectWords
         }));
         console.log("💾 Game state saved.");
+        updateStats(clientDate, totalScore, maxScore, tilesInPool.length);
     };    
 
     return {
@@ -194,7 +244,9 @@ const GameStateManager = (gridWidth) => {
         gameOver, setGameOver,
         attempts, setAttempts,
         incorrectWords, setIncorrectWords,
-        starterWord, totalScore, setTotalScore
+        starterWord, starterWordObj,
+        totalScore, setTotalScore,
+        isLoading, maxScore
     };
 };
 

@@ -25,6 +25,34 @@
   --letterPoolColor: var(--boardContainerColor);
   --submitButtonColor: #2AB7CA;
   --submitButtonHoverColor: #209DAF;
+
+
+    /* 🎨 Main Theme Colors */
+    --primary-blue: #264653;      /* Navbar, main theme */
+    --secondary-blue: #2A9D8F;    /* Light accent */
+    --background-blue: #1E3A50;   /* Main section background */
+    --board-blue: #2A4D69;        /* Board background */
+    --tile-blue: #3D5A80;         /* Default letter tile color */
+    --empty-tile-blue: rgba(220, 235, 245, 0.8);   /* Empty tile slots */
+    --board-background: white;
+  
+    /* 🔥 Multiplier Tiles */
+    --triple-word: rgba(173, 216, 230, 0.8);       /* Gold for TW */
+    --triple-letter: rgba(135, 206, 235, 0.8);     /* Cyan for TL */
+    --double-word: rgba(176, 224, 230, 0.7);       /* Warm pastel yellow for DW */
+    --double-letter: rgba(198, 226, 255, 0.7);     /* Aqua for DL */
+  
+    /* 🔹 Special Tiles */
+    --starter-word: #1B2838;      /* Deep navy */
+    --tile-text: #FFFFFF;         /* White text on tiles */
+  
+    /* 🎯 UI Elements */
+    --submit-button: #E9C46A;     /* Gold for call-to-action */
+    --submit-hover: #D89B4E;      /* Darker gold on hover */
+    --attempt-circle-active: #E76F51;  /* Red for remaining attempts */
+    --attempt-circle-used: #D3D3D3;    /* Gray for used attempts */
+    --nav-text: #EDEDED;          /* Light gray/white text for navbar */
+
 }
 
 a {

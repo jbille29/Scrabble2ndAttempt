@@ -22,18 +22,20 @@ const LetterPool = ({ tilesInPool, tileSize, letterScores, returnTileToPool, gam
         display: 'flex', 
         justifyContent: 'center', 
         flexWrap: 'wrap', 
+       
         marginBottom: '20px',
        
         height: 'auto', // Allows height to grow
         maxHeight: '300px', // Sets maximum height
-        minHeight: `${parseInt(tileSize, 10) + 5}px`, // Sets minimum height
+        minHeight: `${parseInt(tileSize, 21) + 5}px`, // Sets minimum height
         width: "100%", // Sets minimum width
         overflow: 'hidden', // Allows scrolling inside the container if content overflows
         boxShadow: 'inset 0 1px 3px rgba(0, 0, 0, 0.25)', // Inset shadow
         borderRadius: '8px', // Rounded corners
         marginTop: '20px', // Centers the pool
         paddingTop: '5px', // Adds padding to the top
-        paddingBottom: '10px' // Adds padding to the bottom
+        paddingBottom: '10px', // Adds padding to the bottom
+       
     }}>
       {tilesInPool.map(tile => (
         <div style={{

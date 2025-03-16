@@ -40,10 +40,13 @@ export const extractWords = (board, gridWidth) => {
     return words;
 };
 
-export const extractWordsAgain = (board, gridWidth) => {
+export const extractWordsAgain = (board, gridWidth, starterWordObj) => {
   let words = [];
   let word = '';
   let indices = [];
+
+  // 🔹 Convert starterWordObj indices to a Set for easy lookup
+  const starterIndices = new Set(starterWordObj.map(tile => tile.position));
 
   // Horizontal words
   for (let i = 0; i < gridWidth; i++) {
@@ -56,7 +59,9 @@ export const extractWordsAgain = (board, gridWidth) => {
               word += tile.letter;
               indices.push(tileIndex);
           } else if (word.length > 1) {
-              words.push({ word, indices });
+              if (!indices.every(idx => starterIndices.has(idx))) { 
+                words.push({ word, indices }); // ✅ Only add if NOT the starter word
+              }
               word = '';
               indices = [];
           } else {
@@ -64,7 +69,9 @@ export const extractWordsAgain = (board, gridWidth) => {
               indices = [];
           }
       }
-      if (word.length > 1) words.push({ word, indices }); // Check last word in the row
+      if (word.length > 1 && !indices.every(idx => starterIndices.has(idx))) { 
+        words.push({ word, indices }); // ✅ Final row word check
+      }
   }
 
   // Vertical words
@@ -78,7 +85,9 @@ export const extractWordsAgain = (board, gridWidth) => {
               word += tile.letter;
               indices.push(tileIndex);
           } else if (word.length > 1) {
-              words.push({ word, indices });
+            if (!indices.every(idx => starterIndices.has(idx))) { 
+              words.push({ word, indices }); // ✅ Exclude starter word
+            }
               word = '';
               indices = [];
           } else {
@@ -86,84 +95,84 @@ export const extractWordsAgain = (board, gridWidth) => {
               indices = [];
           }
       }
-      if (word.length > 1) words.push({ word, indices }); // Check last word in the column
+      if (word.length > 1 && !indices.every(idx => starterIndices.has(idx))) { 
+        words.push({ word, indices }); // ✅ Final column word check
+      }
   }
   
   return words;
 };
 
 export const calculateScore = (board, words, letterScores) => {
-    let totalScore = 0;
-    let scoreBreakdown = [];
-  
-    words.forEach(entry => {
-      let baseWordScore = 0; // Step 1: Base letter score
-        let finalWordScore = 0; // Step 2: Apply letter multipliers
-      let wordMultipliers = []; // Step 3: Collect multiple word multipliers
-      let appliedFeatures = [];
-  
-      // Calculate the base score
-      entry.indices.forEach(index => {
-        const tile = board[index].tile;
-        const letterScore = letterScores[tile.letter.toUpperCase()];
-        let tileScore = letterScore;
-  
-        baseWordScore += tileScore; // Add letter score to total base score
-      });
-      // Calculate score with features 
-      entry.indices.forEach(index => {
-        const tile = board[index].tile;
-        const feature = board[index].feature;
-        const letterScore = letterScores[tile.letter.toUpperCase()];
-        let tileScore = letterScore;
-        
-        if (feature) {
-          switch (feature.type) {
-            case 'doubleLetterScore':
-              tileScore *= 2;
-              appliedFeatures.push({ name: "Double Letter", value: letterScore });
-              break;
-            case 'tripleLetterScore':
-              tileScore *= 3;
-              appliedFeatures.push({ name: "Triple Letter", value: letterScore * 2 });
-              break;
-            case 'doubleWordScore':
-              wordMultipliers.push(2); // Collect word multipliers separately
-              appliedFeatures.push({ name: "Double Word", value: 0 });
-              break;
-            case 'tripleWordScore':
-              wordMultipliers.push(3);
-              appliedFeatures.push({ name: "Triple Word", value: 0 });
-              break;
-            default:
-              break;
-          }
-        }
-  
-        finalWordScore += tileScore; // Add letter score to total base score
-      });
-  
-      // Step 3: Apply **all** word multipliers one by one
-      wordMultipliers.forEach(multiplier => {
-        finalWordScore *= multiplier;
-      });
-  
-      totalScore += finalWordScore; // Step 4: Add to total score
-      
-      console.log(`Word: ${entry.word}, Base Score: ${baseWordScore}, Final Score: ${totalScore}`);
-      scoreBreakdown.push({
-        word: entry.word,
-        baseScore: baseWordScore,
-        features: appliedFeatures,
-        finalScore: finalWordScore,
-      });
+  let totalScore = 0;
+  let scoreBreakdown = [];
+
+  words.forEach(entry => {
+    let baseWordScore = 0; // Step 1: Base letter score
+      let finalWordScore = 0; // Step 2: Apply letter multipliers
+    let wordMultipliers = []; // Step 3: Collect multiple word multipliers
+    let appliedFeatures = [];
+
+    // Calculate the base score
+    entry.indices.forEach(index => {
+      const tile = board[index].tile;
+      const letterScore = letterScores[tile.letter.toUpperCase()];
+      let tileScore = letterScore;
+
+      baseWordScore += tileScore; // Add letter score to total base score
     });
-    
-    console.log("\n🏆 FINAL TOTAL SCORE:", totalScore);
-    console.log("📝 SCORE BREAKDOWN:", scoreBreakdown);
-    return { totalScore, scoreBreakdown };
-  };
+    // Calculate score with features 
+    entry.indices.forEach(index => {
+      const tile = board[index].tile;
+      const feature = board[index].feature;
+      const letterScore = letterScores[tile.letter.toUpperCase()];
+      let tileScore = letterScore;
+      
+      if (feature) {
+        switch (feature.type) {
+          case 'doubleLetterScore':
+            tileScore *= 2;
+            appliedFeatures.push({ name: "Double Letter", value: letterScore });
+            break;
+          case 'tripleLetterScore':
+            tileScore *= 3;
+            appliedFeatures.push({ name: "Triple Letter", value: letterScore * 2 });
+            break;
+          case 'doubleWordScore':
+            wordMultipliers.push(2); // Collect word multipliers separately
+            appliedFeatures.push({ name: "Double Word", value: 0 });
+            break;
+          case 'tripleWordScore':
+            wordMultipliers.push(3);
+            appliedFeatures.push({ name: "Triple Word", value: 0 });
+            break;
+          default:
+            break;
+        }
+      }
+
+      finalWordScore += tileScore; // Add letter score to total base score
+    });
+
+    // Step 3: Apply **all** word multipliers one by one
+    wordMultipliers.forEach(multiplier => {
+      finalWordScore *= multiplier;
+    });
+
+    totalScore += finalWordScore; // Step 4: Add to total score
+   
+    scoreBreakdown.push({
+      word: entry.word,
+      baseScore: baseWordScore,
+      features: appliedFeatures,
+      finalScore: finalWordScore,
+    });
+  });
   
+  console.log("\n🏆 FINAL TOTAL SCORE:", totalScore);
+  console.log("📝 SCORE BREAKDOWN:", scoreBreakdown);
+  return { totalScore, scoreBreakdown };
+};
 
 
 /*

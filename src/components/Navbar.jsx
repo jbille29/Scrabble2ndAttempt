@@ -11,9 +11,11 @@ const Navbar = ({ onToggleStats, onToggleInfo }) => {
         <button onClick={onToggleStats}>
           <FaChartSimple/>
         </button>
+        {/*}
         <button onClick={onToggleInfo}>
           <FaCircleQuestion />
         </button>
+        */}
       </div>
     </nav>
   );

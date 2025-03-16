@@ -6,12 +6,12 @@ import Square from './Square';
 import { extractWords, calculateScore, isConnected, extractWordsAgain } from './utils/gameUtils';
 import letterScores from './utils/letterScores';
 import ToastNotification from "./components/ToastNotification"; // Import Toast
+import './GameBoard.css';
 
 const GameBoard = () => {
   let gridWidth = 5; // Set grid width for 8x8 grid
   const [tileSize, setTileSize] = useState('50px');
   const [showModal, setShowModal] = useState(false);
-  const [modalContent, setModalContent] = useState("");
   const [toastMessage, setToastMessage] = useState(""); // Toast state
   const [scoreBreakdown, setScoreBreakdown] = useState([]);
   const [showScoreModal, setShowScoreModal] = useState(false); // Controls the score breakdown modal
@@ -24,7 +24,9 @@ const GameBoard = () => {
     gameOver, setGameOver,
     attempts, setAttempts,
     incorrectWords, setIncorrectWords,
-    starterWord, totalScore, setTotalScore
+    starterWord, starterWordObj,
+    totalScore, setTotalScore,
+    isLoading, maxScore
   } = GameStateManager(gridWidth);
 
   const showToast = (message) => {
@@ -59,7 +61,7 @@ const GameBoard = () => {
 
 
   const handleCalculateScore = () => {
-    if (gameOver || validWords.size === 0) return; // Prevent scoring if game is over or no valid words
+    if (gameOver || validWords.size === 0 || tilesInPool.length === 10) return; // Prevent scoring if game is over or no valid words
 
     const words = extractWords(board, gridWidth);
   
@@ -80,15 +82,32 @@ const GameBoard = () => {
     if (newIncorrectWord) {
       setIncorrectWords(prev => [...prev, newIncorrectWord.toUpperCase()]);
       setAttempts(prevAttempts => Math.max(prevAttempts - 1, 0));
-      showToast(`"${newIncorrectWord}" is not valid. Try again.`);
+      showToast(`"${newIncorrectWord}" is not valid. ${attempts-1} remaining.`);
 
       setTimeout(() => {
         if (attempts - 1 <= 0) {
-          showToast("Game Over! No more attempts left.");
+            // 🚀 Only calculate the score from **valid words**
+            const validWordsList = words.filter(word => validWords.has(word.toLowerCase()));
+            
+            // **If there are no valid words, set the score to 0**
+            let finalScore = 0;
+            let scoreBreakdown = [];
+
+            if (validWordsList.length > 0) {
+                const scoreData = calculateScore(board, extractWordsAgain(board, gridWidth, starterWordObj)
+                    .filter(word => validWords.has(word.word.toLowerCase())), letterScores);
+                finalScore = scoreData.totalScore;
+                scoreBreakdown = scoreData.scoreBreakdown;
+            }
+
+            setTotalScore(finalScore);
+            setScoreBreakdown(scoreBreakdown);
+            setGameOver(true);
+            setShowScoreModal(true);
         }
-      }, 0);
-      return;
-    }
+    }, 0);
+    return;
+}
      
     // 🚀 Handle repeat incorrect word (without deducting attempts)
     if (repeatIncorrectWord) {
@@ -99,17 +118,19 @@ const GameBoard = () => {
     console.log("🔠 Words:", words);
     // If all words are correct
     if ((words.every(word => validWords.has(word.toLowerCase())))) {
-        const { totalScore, scoreBreakdown } = calculateScore(board, extractWordsAgain(board, gridWidth), letterScores);
-        setTotalScore(totalScore);
-        setScoreBreakdown(scoreBreakdown);
-        setShowScoreModal(true);
-        setGameOver(true);
-    }
-  }
+      const { totalScore, scoreBreakdown } = calculateScore(
+        board,
+        extractWordsAgain(board, gridWidth, starterWordObj)
+          .filter(word => validWords.has(word.word.toLowerCase())), // ✅ Ensures only valid words are counted
+        letterScores
+      );
+      setTotalScore(totalScore);
+      setScoreBreakdown(scoreBreakdown);
+      setShowScoreModal(true);
+      setGameOver(true);
+  }  
 
-  const handleCloseModal = () => {
-    setShowModal(false);
-  };
+}  // ✅ Properly closes handleCalculateScore before starting DND functions
 
   // DND FUNCTIONS
   const moveTileToBoard = (tile, toIndex) => {
@@ -146,11 +167,22 @@ const GameBoard = () => {
     }
   };
 
+  
+
   // STYLE VARIABLES
   const paddingTotal = 10 * 2; // 10px padding on each side
   const gapTotal = (gridWidth - 1) * 5; // Total gap based on number of gaps
   const totalWidth = parseInt(tileSize) * gridWidth + gapTotal + paddingTotal;
 
+  if (isLoading) {
+    return (
+        <div className="spinner-container">
+            <div className="spinner"></div>
+            <p>Loading Puzzle...</p>
+        </div>
+    );
+  }
+  
   return (
     <div style={{
       '--grid-width': `${totalWidth}px`,  // CSS Variable
@@ -184,6 +216,7 @@ const GameBoard = () => {
       <div className="board-container" style={{ 
           display: 'grid',
           gridTemplateColumns: `repeat(${gridWidth}, ${tileSize})`,
+          background: 'var(--board-background)',
           gap: '5px',
           padding: '10px',
           boxShadow: '0 4px 8px rgba(0,0,0,0.1)', // Subtle shadow for depth
@@ -218,9 +251,35 @@ const GameBoard = () => {
           display: 'flex',
           justifyContent: 'space-between',
         }}>
-          <button onClick={handleCalculateScore}>
+          {!gameOver ? (
+          <button 
+            onClick={handleCalculateScore}
+            disabled={validWords.size === 0 || tilesInPool.length === 10}
+            style={{
+              backgroundColor: (validWords.size === 0 || tilesInPool.length === 10) ? '#A9A9A9' : '#4A90E2', // Gray if inactive, blue if active
+              color: 'white',
+              cursor: (validWords.size === 0 || tilesInPool.length === 10) ? 'not-allowed' : 'pointer',
+              padding: '10px 20px',
+              border: 'none',
+              borderRadius: '5px',
+            }}
+            >
             Submit
           </button>      
+          ) : (
+            <button 
+              onClick={()=>setShowScoreModal(true)}
+              style={{
+                backgroundColor: '#4A90E2',
+                color: 'white',
+                padding: '10px 20px',
+                border: 'none',
+                borderRadius: '5px',
+              }}
+              >
+            Results
+          </button> 
+          )}
           
             
           <div style={{ display: "flex", alignItems: "center", gap: "5px" }}>
@@ -244,31 +303,13 @@ const GameBoard = () => {
       {showScoreModal && (
         <ScoreBreakdownModal
           scoreBreakdown={scoreBreakdown}
+          maxScore={maxScore}
+          lettersLeft={tilesInPool.length}
           onClose={() => setShowScoreModal(false)}
         />
       )}
 
-      {showModal && (
-        <div 
-          style={{ 
-            position: 'fixed', top: '50%', left: '50%', transform: 'translate(-50%, -50%)',
-          backgroundColor: 'white', padding: '20px', zIndex: 1000,
-          borderRadius: '8px', boxShadow: '0 6px 12px rgba(0,0,0,0.15)'
-          }}>
-          <p>{modalContent}</p>
-          <button onClick={handleCloseModal}
-          style={{
-            backgroundColor: '#f44336', // Soft red color
-            color: 'white',
-            border: 'none',
-            padding: '8px 16px',
-            fontSize: '14px',
-            borderRadius: '4px',
-            cursor: 'pointer'
-          }}>Close</button>
-          
-        </div>
-      )}
+      
     </div>
   );
 };

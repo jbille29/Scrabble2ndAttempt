@@ -1,0 +1,76 @@
+.stats-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+  }
+  
+  .stats-container {
+    background: white;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+    text-align: center;
+    width: 90%;
+    max-width: 400px;
+  }
+  
+  .stats-title {
+    font-size: 1.5rem;
+    margin-bottom: 10px;
+  }
+  
+  .stats-summary {
+    display: flex;
+    justify-content: space-around;
+    margin: 20px 0;
+  }
+  
+  .stats-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  .stat-value {
+    font-size: 1.4rem;
+    font-weight: bold;
+    color: #535693;
+  }
+  
+  .stat-label {
+    font-size: 0.9rem;
+    color: #666;
+  }
+  
+  .chart-container {
+    margin: 20px 0;
+    height: 200px;
+  }
+  
+  .no-games-text {
+    font-size: 1rem;
+    color: #999;
+  }
+  
+  .close-button {
+    background: #535693;
+    color: white;
+    border: none;
+    padding: 10px 15px;
+    font-size: 1rem;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: 0.3s ease;
+  }
+  
+  .close-button:hover {
+    background: #434373;
+  }
+  
