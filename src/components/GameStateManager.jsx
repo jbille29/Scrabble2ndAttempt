@@ -11,7 +11,8 @@ const loadWordList = async () => {
 
     try {
         console.log('📥 Fetching words from backend...');
-        const response = await axios.get('http://localhost:3000/api/words'); // Corrected URL
+        const response = await axios.get(`https://scrabbleapi.onrender.com/api/words`); // Corrected URL
+        //const response = await axios.get('http://localhost:3000/api/words'); // Corrected URL
 
         // API returns an array, no need for destructuring
         const words = response.data;  
@@ -91,8 +92,6 @@ const GameStateManager = (gridWidth) => {
     
         return () => clearInterval(checkForNewDay);
     }, []);
-    
-    
 
     const fetchGameData = async () => {
         setIsLoading(true);

@@ -114,8 +114,6 @@ const GameBoard = () => {
       showToast(`"${repeatIncorrectWord}" has already been guessed and is incorrect. Try something else.`);
       return;
     }
-
-    console.log("🔠 Words:", words);
     // If all words are correct
     if ((words.every(word => validWords.has(word.toLowerCase())))) {
       const { totalScore, scoreBreakdown } = calculateScore(
@@ -167,7 +165,25 @@ const GameBoard = () => {
     }
   };
 
-  
+  // 🔄 Function to Shuffle Letter Pool
+  const shuffleTiles = () => {
+    setTilesInPool([...tilesInPool].sort(() => Math.random() - 0.5)); // Shuffle array
+  };
+
+  // 🏠 Function to Recall All Tiles Back to Pool
+  const recallTiles = () => {
+    const recalledTiles = board
+      .filter(square => square.tile && !square.tile.isPrePlaced) // Get placed but non-starter tiles
+      .map(square => square.tile);
+    
+    const newBoard = board.map(square => ({
+      ...square,
+      tile: square.tile?.isPrePlaced ? square.tile : null, // Keep starter word tiles
+    }));
+
+    setBoard(newBoard);
+    setTilesInPool([...tilesInPool, ...recalledTiles]);
+  };
 
   // STYLE VARIABLES
   const paddingTotal = 10 * 2; // 10px padding on each side
@@ -235,6 +251,46 @@ const GameBoard = () => {
             tileSize={tileSize}
             gameOver={gameOver}/>
         ))}
+      </div>
+        {/* 🔹 Buttons Container for UX */}
+        <div className="button-container" style={{
+        display: "flex",
+        justifyContent: "space-between",
+        alignItems: "center",
+        width: "100%",
+        marginTop: "10px",
+      }}>
+        <button 
+          onClick={recallTiles}
+          style={{
+            backgroundColor: '#F4A261',
+            color: 'white',
+            padding: '8px 16px',
+            borderRadius: '5px',
+            border: 'none',
+            cursor: 'pointer',
+          }}
+        >
+          🏠 Recall
+        </button>
+
+       {/* 🔄 Shuffle Button */}
+       <button 
+          onClick={shuffleTiles}
+          style={{
+            backgroundColor: '#2A9D8F',
+            color: 'white',
+            padding: '8px 16px',
+            borderRadius: '5px',
+            border: 'none',
+            cursor: 'pointer',
+          }}
+        >
+          🔄 Shuffle
+        </button>
+
+        {/* 🏠 Recall Tiles Button */}
+        
       </div>
       
       <LetterPool 
