@@ -1,6 +1,6 @@
 // components/LetterPool.jsx
 import React from 'react';
-import Tile from '../Tile';
+import Tile from './Tile';
 import { useDrop } from 'react-dnd';
 
 const LetterPool = ({ tilesInPool, tileSize, letterScores, returnTileToPool, gameOver }) => {
@@ -22,7 +22,7 @@ const LetterPool = ({ tilesInPool, tileSize, letterScores, returnTileToPool, gam
         display: 'flex', 
         justifyContent: 'center', 
         flexWrap: 'wrap', 
-       
+        
         marginBottom: '20px',
        
         height: 'auto', // Allows height to grow
@@ -32,7 +32,7 @@ const LetterPool = ({ tilesInPool, tileSize, letterScores, returnTileToPool, gam
         overflow: 'hidden', // Allows scrolling inside the container if content overflows
         boxShadow: 'inset 0 1px 3px rgba(0, 0, 0, 0.25)', // Inset shadow
         borderRadius: '8px', // Rounded corners
-        marginTop: '20px', // Centers the pool
+        marginTop: '7px', // Centers the pool
         paddingTop: '5px', // Adds padding to the top
         paddingBottom: '10px', // Adds padding to the bottom
        

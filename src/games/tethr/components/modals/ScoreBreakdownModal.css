@@ -101,4 +101,62 @@
   .close-button:hover {
     background: #c82333;
   }
+
+  /* Styles for the textarea */
+.share-text {
+  box-sizing: border-box;
+  width: 100%; /* Set the width to fill the container */
+  height: 110px; /* Fixed height */
+  overflow: hidden;
+  padding: 8px; /* Padding inside the textarea */
+  border: 2px solid #ccc; /* Border color */
+  border-radius: 4px; /* Rounded corners */
+  background-color: #f8f8f8; /* Light grey background */
+  color: #333; /* Dark grey text color */
+  font-size: 16px; /* Text size */
+  resize: none; /* Disable resizing */
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1); /* Subtle shadow for depth */
+  margin-bottom: 10px; /* Space below the textarea */
+}
+
+/* Additional styles for a focused textarea */
+.share-text:focus {
+  border-color: #80bdff; /* Light blue border on focus */
+  outline: none; /* Remove default focus outline */
+  box-shadow: 0 0 0 2px rgba(128, 189, 255, 0.25); /* More prominent shadow on focus */
+}
+
+/* Styles for the copy button */
+.copy-button {
+  padding: 10px 20px; /* Padding inside the button */
+  font-size: 16px; /* Text size in the button */
+  color: white; /* White text color */
+  background-color: #007bff; /* Blue background color */
+  border: none; /* No border */
+  border-radius: 4px; /* Rounded corners */
+  cursor: pointer; /* Pointer cursor on hover */
+  transition: background-color 0.3s; /* Smooth transition for background color */
+}
+
+/* Hover effect for the copy button */
+.copy-button:hover {
+  background-color: #0056b3; /* Darker blue on hover */
+}
+
+/* Styles for the close button, similar to copy button but different color */
+.close-button {
+  padding: 10px 20px;
+  font-size: 16px;
+  color: white;
+  background-color: #dc3545; /* Red background color */
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.close-button:hover {
+  background-color: #c82333; /* Darker red on hover */
+}
+
   

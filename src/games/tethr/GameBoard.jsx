@@ -1,11 +1,14 @@
 import React, { useState, useEffect } from 'react';
+import { FaRandom, FaUndo } from 'react-icons/fa';
+
 import LetterPool from './components/LetterPool';
 import GameStateManager from './components/GameStateManager';
-import ScoreBreakdownModal from './components/dev/ScoreBreakdownModal';
-import Square from './Square';
+import ScoreBreakdownModal from './components/modals/ScoreBreakdownModal';
+import Square from './components/Square'
+import ToastNotification from "./components/ToastNotification"; // Import Toast
+
 import { extractWords, calculateScore, isConnected, extractWordsAgain } from './utils/gameUtils';
 import letterScores from './utils/letterScores';
-import ToastNotification from "./components/ToastNotification"; // Import Toast
 import './GameBoard.css';
 
 const GameBoard = () => {
@@ -26,7 +29,7 @@ const GameBoard = () => {
     incorrectWords, setIncorrectWords,
     starterWord, starterWordObj,
     totalScore, setTotalScore,
-    isLoading, maxScore
+    isLoading
   } = GameStateManager(gridWidth);
 
   const showToast = (message) => {
@@ -206,8 +209,7 @@ const GameBoard = () => {
       display: "flex",
       flexDirection: "column",
       justifyContent: "center",
-      alignItems: "center",
-      
+      alignItems: "center",      
     }}>
       {toastMessage && <ToastNotification message={toastMessage} onClose={() => setToastMessage("")} />}
       {/* 🔹 Instructions at the top */}
@@ -215,7 +217,7 @@ const GameBoard = () => {
         <div style={{
           marginBottom: "10px",
           fontSize: "18px",
-          textAlign: "center"
+          textAlign: "center",
         }}>
           {!gameOver ? (
             <span>
@@ -259,35 +261,25 @@ const GameBoard = () => {
         alignItems: "center",
         width: "100%",
         marginTop: "10px",
+       
       }}>
-        <button 
-          onClick={recallTiles}
-          style={{
-            backgroundColor: '#F4A261',
-            color: 'white',
-            padding: '8px 16px',
-            borderRadius: '5px',
-            border: 'none',
-            cursor: 'pointer',
-          }}
-        >
-          🏠 Recall
-        </button>
 
-       {/* 🔄 Shuffle Button */}
-       <button 
-          onClick={shuffleTiles}
-          style={{
-            backgroundColor: '#2A9D8F',
-            color: 'white',
-            padding: '8px 16px',
-            borderRadius: '5px',
-            border: 'none',
-            cursor: 'pointer',
-          }}
-        >
-          🔄 Shuffle
-        </button>
+        <div style={{ display: "flex", alignItems: "center", gap: "5px" }}>
+            <span>Attempts:</span>
+            {Array.from({ length: attempts }).map((_, index) => (
+                <span
+                    key={index}
+                    style={{
+                        width: "12px",
+                        height: "12px",
+                        backgroundColor: attempts > 0 ? "#4A90E2" : "#D32F2F",
+                        borderRadius: "50%", // Makes it a circle
+                        display: "inline-block",
+                    }}
+                ></span>
+            ))}
+        </div>
+        
 
         {/* 🏠 Recall Tiles Button */}
         
@@ -306,6 +298,7 @@ const GameBoard = () => {
           width: '100%',
           display: 'flex',
           justifyContent: 'space-between',
+          alignItems: 'center',
         }}>
           {!gameOver ? (
           <button 
@@ -337,35 +330,48 @@ const GameBoard = () => {
           </button> 
           )}
           
-            
-          <div style={{ display: "flex", alignItems: "center", gap: "5px" }}>
-            <span>Attempts:</span>
-            {Array.from({ length: attempts }).map((_, index) => (
-                <span
-                    key={index}
-                    style={{
-                        width: "12px",
-                        height: "12px",
-                        backgroundColor: attempts > 0 ? "#4A90E2" : "#D32F2F",
-                        borderRadius: "50%", // Makes it a circle
-                        display: "inline-block",
-                    }}
-                ></span>
-            ))}
-        </div>
+          <div 
+            style={{
+              display: 'flex',
+            }}>
+          <FaUndo 
+            onClick={!gameOver ? recallTiles : undefined} // Disable click when gameOver is true
+            style={{
+              color: gameOver ? "gray" : "black",
+              padding: '8px 16px',
+              borderRadius: '5px',
+              border: 'none',
+              cursor: (gameOver || tilesInPool.length === 10) ? 'not-allowed' : 'pointer',
+              marginRight: '10px',
+              pointerEvents: gameOver ? 'none' : 'auto' // Prevents click events when disabled
+            }} size={18} />
+       
+
+       {/* 🔄 Shuffle Button */}
+      
+        <FaRandom 
+          onClick={!gameOver ? shuffleTiles : undefined}
+          disabled={gameOver}
+          style={{
+            color: gameOver ? "gray" : "black",
+            padding: '8px 16px',
+            borderRadius: '5px',
+            border: 'none',
+            cursor: gameOver ? 'not-allowed' : 'pointer',
+            pointerEvents: gameOver ? 'none' : 'auto' // Prevents click events when disabled
+          }}
+          size={18} />
+          </div>
       </div>
      
       {/*********  MODALS ***************/}
       {showScoreModal && (
         <ScoreBreakdownModal
           scoreBreakdown={scoreBreakdown}
-          maxScore={maxScore}
           lettersLeft={tilesInPool.length}
           onClose={() => setShowScoreModal(false)}
         />
-      )}
-
-      
+      )}      
     </div>
   );
 };

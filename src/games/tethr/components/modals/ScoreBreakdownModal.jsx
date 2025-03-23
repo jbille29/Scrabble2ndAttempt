@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import "./ScoreBreakdownModal.css";
 
-const ScoreBreakdownModal = ({ scoreBreakdown, maxScore, lettersLeft, onClose }) => {
+const ScoreBreakdownModal = ({ scoreBreakdown, lettersLeft, onClose }) => {
   const [displayedWords, setDisplayedWords] = useState([]);
   const [animatedTotalScore, setAnimatedTotalScore] = useState(0);
   const [shareText, setShareText] = useState("");
@@ -94,9 +94,10 @@ const ScoreBreakdownModal = ({ scoreBreakdown, maxScore, lettersLeft, onClose })
 
   // Generate shareable results
   useEffect(() => {
-    const resultText = `🟡 Scrabble Challenge 🟡\n📅 ${date}\nScore: ${animatedTotalScore}/${maxScore}\n🔡 Letters Left: ${lettersLeft}`;
+    const resultText = `🔗 Tethr Game Results 🔗\n📅 Date: ${date}\n🎯 Final Score: ${animatedTotalScore}\n🔡 Remaining Letters: ${lettersLeft}`;
+
     setShareText(resultText);
-  }, [animatedTotalScore, maxScore, lettersLeft, date]);
+  }, [animatedTotalScore, lettersLeft, date]);
 
   // Copy to clipboard function
   const copyToClipboard = () => {
@@ -178,7 +179,7 @@ const ScoreBreakdownModal = ({ scoreBreakdown, maxScore, lettersLeft, onClose })
           transition={{ duration: 1, ease: "easeOut" }}
           className="total-score"
         >
-          Total Score: {animatedTotalScore}/{maxScore}
+          Total Score: {animatedTotalScore}
         </motion.div>
 
         {/* Shareable Results Section */}
@@ -186,7 +187,7 @@ const ScoreBreakdownModal = ({ scoreBreakdown, maxScore, lettersLeft, onClose })
           <h3>Share Your Results!</h3>
           <textarea className="share-text" readOnly value={shareText}></textarea>
           <button className="copy-button" onClick={copyToClipboard}>
-            📋 Copy Results
+            Copy Results
           </button>
         </div>
 
