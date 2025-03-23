@@ -16,7 +16,6 @@ const GameBoard = () => {
   const [tileSize, setTileSize] = useState('50px');
   const [showModal, setShowModal] = useState(false);
   const [toastMessage, setToastMessage] = useState(""); // Toast state
-  const [scoreBreakdown, setScoreBreakdown] = useState([]);
   const [showScoreModal, setShowScoreModal] = useState(false); // Controls the score breakdown modal
   
 
@@ -29,7 +28,7 @@ const GameBoard = () => {
     incorrectWords, setIncorrectWords,
     starterWord, starterWordObj,
     totalScore, setTotalScore,
-    isLoading
+    isLoading, scoreBreakdown, setScoreBreakdown
   } = GameStateManager(gridWidth);
 
   const showToast = (message) => {
@@ -64,8 +63,9 @@ const GameBoard = () => {
 
 
   const handleCalculateScore = () => {
+    console.log('Calculating Score............');
     if (gameOver || validWords.size === 0 || tilesInPool.length === 10) return; // Prevent scoring if game is over or no valid words
-
+    
     const words = extractWords(board, gridWidth);
   
     // 🚀 Find first truly new incorrect word
@@ -75,6 +75,7 @@ const GameBoard = () => {
     // Find first already guessed incorrect word
     const repeatIncorrectWord = words.find(word => incorrectWords.includes(word.toUpperCase()));
     
+
     // 🚀 Check if all tiles are connected to an anchor tile
     if (!isConnected(board, gridWidth)) {
       showToast("Please ensure all tiles are connected to an anchor tile.");
@@ -83,10 +84,10 @@ const GameBoard = () => {
 
     // 🚀 Handle new incorrect word (store & deduct attempt)
     if (newIncorrectWord) {
+      console.log('New Incorrect Word:', newIncorrectWord);
       setIncorrectWords(prev => [...prev, newIncorrectWord.toUpperCase()]);
       setAttempts(prevAttempts => Math.max(prevAttempts - 1, 0));
       showToast(`"${newIncorrectWord}" is not valid. ${attempts-1} remaining.`);
-
       setTimeout(() => {
         if (attempts - 1 <= 0) {
             // 🚀 Only calculate the score from **valid words**
@@ -95,14 +96,7 @@ const GameBoard = () => {
             // **If there are no valid words, set the score to 0**
             let finalScore = 0;
             let scoreBreakdown = [];
-
-            if (validWordsList.length > 0) {
-                const scoreData = calculateScore(board, extractWordsAgain(board, gridWidth, starterWordObj)
-                    .filter(word => validWords.has(word.word.toLowerCase())), letterScores);
-                finalScore = scoreData.totalScore;
-                scoreBreakdown = scoreData.scoreBreakdown;
-            }
-
+            
             setTotalScore(finalScore);
             setScoreBreakdown(scoreBreakdown);
             setGameOver(true);
@@ -110,15 +104,18 @@ const GameBoard = () => {
         }
     }, 0);
     return;
-}
+  }
      
     // 🚀 Handle repeat incorrect word (without deducting attempts)
     if (repeatIncorrectWord) {
+      console.log('Repeat Incorrect Word:', repeatIncorrectWord);
       showToast(`"${repeatIncorrectWord}" has already been guessed and is incorrect. Try something else.`);
       return;
     }
     // If all words are correct
     if ((words.every(word => validWords.has(word.toLowerCase())))) {
+      console.log('All words are correct!');
+      
       const { totalScore, scoreBreakdown } = calculateScore(
         board,
         extractWordsAgain(board, gridWidth, starterWordObj)

@@ -41,6 +41,7 @@ const GameStateManager = (gridWidth) => {
     const [starterWordObj, setStaterWordObj] = useState([]);
     const [totalScore, setTotalScore] = useState(0);
     const [isLoading, setIsLoading] = useState(true);
+    const [scoreBreakdown, setScoreBreakdown] = useState([]);
 
 
     useEffect(() => {
@@ -115,6 +116,7 @@ const GameStateManager = (gridWidth) => {
             setTotalScore(localData.totalScore);
             setAttempts(localData.attempts);
             setIncorrectWords(localData.incorrectWords);
+            setScoreBreakdown(localData.scoreBreakdown || []);
             setIsLoading(false);
             return;
         }
@@ -123,7 +125,7 @@ const GameStateManager = (gridWidth) => {
             const response = await axios.get(`http://localhost:3000/api/letterpool/daily?date=${encodeURIComponent(clientDate)}`);
             console.timeEnd("⏳ API Response Time");
             const { letterPool, starterWordObj } = response.data;
-
+            console.log("🎲 Game data fetched:", response.data);
             setTilesInPool(letterPool);
 
             const starterWord = starterWordObj.map(t => t.letter).join("");
@@ -152,9 +154,11 @@ const GameStateManager = (gridWidth) => {
                 totalScore,
                 attempts,
                 incorrectWords,
+                scoreBreakdown
             };
-
+            console.log("HELLOW");
             localStorage.setItem("games", JSON.stringify(storedGames));
+           
         } catch (error) {
             console.error("❌ Error fetching game data:", error);
         } finally {
@@ -165,7 +169,7 @@ const GameStateManager = (gridWidth) => {
     const updateStats = (date, score, lettersLeft) => {
         const storedGames = JSON.parse(localStorage.getItem("games")) || {};
         storedGames[GAME_KEY] = storedGames[GAME_KEY] || {};
-
+       
         let stats = storedGames[GAME_KEY].stats || { gamesPlayed: 0, history: [] };
 
         const existingGameIndex = stats.history.findIndex(entry => entry.date === date);
@@ -187,7 +191,7 @@ const GameStateManager = (gridWidth) => {
             saveGameState();
             console.log("🔥 Game state saved to Local Storage.");
         }
-    }, [board, tilesInPool, attempts, incorrectWords, gameOver, totalScore]);
+    }, [board, tilesInPool, attempts, incorrectWords, gameOver, totalScore, scoreBreakdown]);
 
     const saveGameState = () => {
         const clientDate = new Date().toISOString().split("T")[0];
@@ -204,10 +208,12 @@ const GameStateManager = (gridWidth) => {
             tilesInPool,
             board: cleanedBoard,
             starterWord,
+            starterWordObj,
             gameOver,
             totalScore,
             attempts,
-            incorrectWords
+            incorrectWords,
+            scoreBreakdown
         };
 
         localStorage.setItem("games", JSON.stringify(storedGames));
@@ -224,7 +230,8 @@ const GameStateManager = (gridWidth) => {
         incorrectWords, setIncorrectWords,
         starterWord, starterWordObj,
         totalScore, setTotalScore,
-        isLoading
+        isLoading,
+        scoreBreakdown, setScoreBreakdown
     };
 };
 
